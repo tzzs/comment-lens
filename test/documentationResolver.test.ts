@@ -21,6 +21,27 @@ test('uses documentation from hover at the reference position', async () => {
   assert.equal(result?.fullText, '已支付订单');
 });
 
+test('adds definition location even when reference hover has documentation', async () => {
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => ['```ts', 'const value: OrderStatus', '```', '已支付订单'],
+    getDefinitionLocation: async () => ({ uri: 'file:///status.ts', line: 8, character: 13 }),
+    getHoverMarkdownLinesAtLocation: async () => {
+      throw new Error('definition hover should not be needed when reference hover has documentation');
+    }
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80 });
+
+  const result = await resolver.resolve({
+    word: 'OrderStatusPaid',
+    line: 4,
+    startCharacter: 11,
+    endCharacter: 26
+  });
+
+  assert.equal(result?.summary, '已支付订单');
+  assert.deepEqual(result?.location, { uri: 'file:///status.ts', line: 8, character: 13 });
+});
+
 test('falls back to definition hover when reference hover has no documentation', async () => {
   const lookup: DocumentationLookup = {
     getHoverMarkdownLines: async () => ['```go', 'const OrderStatusPaid OrderStatus = 1', '```'],
@@ -111,4 +132,24 @@ test('updates max hint length after configuration changes', async () => {
   const result = await resolver.resolve(candidate, 'file:///order.ts', 3);
 
   assert.equal(result?.summary, '这是一个非常非...');
+});
+
+test('bounds cache size and evicts the oldest lookup', async () => {
+  let hoverCalls = 0;
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => {
+      hoverCalls++;
+      return ['业务状态'];
+    },
+    getDefinitionLocation: async () => undefined,
+    getHoverMarkdownLinesAtLocation: async () => []
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80, maxCacheEntries: 2 });
+
+  await resolver.resolve({ word: 'one', line: 1, startCharacter: 0, endCharacter: 3 }, 'file:///order.ts', 1);
+  await resolver.resolve({ word: 'two', line: 2, startCharacter: 0, endCharacter: 3 }, 'file:///order.ts', 1);
+  await resolver.resolve({ word: 'three', line: 3, startCharacter: 0, endCharacter: 5 }, 'file:///order.ts', 1);
+  await resolver.resolve({ word: 'one', line: 1, startCharacter: 0, endCharacter: 3 }, 'file:///order.ts', 1);
+
+  assert.equal(hoverCalls, 4);
 });

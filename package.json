@@ -86,6 +86,12 @@
           "default": 750,
           "minimum": 100,
           "description": "Maximum time in milliseconds to wait for a single documentation lookup."
+        },
+        "commentDocLens.maxCacheEntries": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 100,
+          "description": "Maximum number of cached documentation lookup results."
         }
       }
     }

@@ -128,6 +128,78 @@ test('prefers the tail of property chains when configured', async () => {
   assert.deepEqual(hints.map((hint) => hint.label), ['// doc for displayName']);
 });
 
+test('applies max hint budget after filtering noisy candidates', async () => {
+  const resolvedWords: string[] = [];
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) => {
+      resolvedWords.push(candidate.word);
+      return {
+        summary: `doc for ${candidate.word}`,
+        fullText: `doc for ${candidate.word}`,
+        location: { uri: 'file:///order.ts', line: 1, character: 1 }
+      };
+    }
+  };
+
+  const hints = await buildCommentHints({
+    lines: [
+      'const ignoredDeclaration = order.customer.profile.displayName;',
+      'const visible = usefulSymbol;'
+    ],
+    range: { startLine: 0, endLineInclusive: 1 },
+    languageId: 'typescript',
+    documentUri: 'file:///order.ts',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescript'],
+      maxHintsPerRequest: 2,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.deepEqual(resolvedWords, ['displayName', 'usefulSymbol']);
+  assert.deepEqual(hints.map((hint) => hint.label), ['// doc for displayName', '// doc for usefulSymbol']);
+});
+
+test('deduplicates repeated candidate positions within a request', async () => {
+  let resolveCalls = 0;
+  const resolver: CommentHintResolver = {
+    resolve: async () => {
+      resolveCalls++;
+      return {
+        summary: 'shared documentation',
+        fullText: 'shared documentation'
+      };
+    }
+  };
+
+  const hints = await buildCommentHints({
+    lines: ['const value = repeated + repeated;'],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'typescript',
+    documentUri: 'file:///order.ts',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescript'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.equal(resolveCalls, 2);
+  assert.deepEqual(hints.map((hint) => hint.label), ['// shared documentation']);
+});
+
 test('filters short identifiers unless resolved documentation has a location', async () => {
   const resolver: CommentHintResolver = {
     resolve: async (candidate) => ({

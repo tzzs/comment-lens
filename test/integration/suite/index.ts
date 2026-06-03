@@ -11,6 +11,13 @@ export async function run(): Promise<void> {
   await runTest('TypeScript reference shows definition documentation', async () => {
     const hints = await getHintsForFixture('order.ts');
     assertHintIncludes(hints, 'Paid order status.');
+    assertHintIncludes(hints, 'Refunded enum member.');
+    assertHintIncludes(hints, 'Formats the order status label.');
+    assertHintIncludes(hints, 'Order presenter class.');
+    assertHintIncludes(hints, 'Returns the display label.');
+    assertHintIncludes(hints, 'Shared order metadata.');
+    assertHintIncludes(hints, 'Object helper for status labels.');
+    assertHintIncludes(hints, 'Formats through the object helper.');
   });
 
   await runTest('JavaScript JSDoc shows definition documentation', async () => {

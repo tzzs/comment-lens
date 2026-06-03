@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import type { SymbolCandidate } from './candidateScanner';
-import { DocumentationResolver, type DocumentationLookup, type LocationLike } from './documentationResolver';
+import {
+  DocumentationResolver,
+  type DocumentationLookup,
+  type DocumentationResolverOptions,
+  type LocationLike
+} from './documentationResolver';
 import { buildCommentHints, type CommentDocLensConfig } from './hintBuilder';
 import { hoverContentsToMarkdownLines } from './hoverContent';
 
@@ -176,10 +181,11 @@ function readCommentDocLensConfig(): CommentDocLensConfig {
   };
 }
 
-function readResolverOptions(): { maxHintLength: number } {
+function readResolverOptions(): DocumentationResolverOptions {
   const config = vscode.workspace.getConfiguration('commentDocLens');
   return {
-    maxHintLength: config.get<number>('maxHintLength', 80)
+    maxHintLength: config.get<number>('maxHintLength', 80),
+    maxCacheEntries: config.get<number>('maxCacheEntries', 1000)
   };
 }
 

@@ -19,6 +19,7 @@ export interface DocumentationLookup {
 
 export interface DocumentationResolverOptions {
   maxHintLength: number;
+  maxCacheEntries?: number;
 }
 
 export class DocumentationResolver {
@@ -56,14 +57,15 @@ export class DocumentationResolver {
       this.options.maxHintLength
     );
     if (fromReference) {
-      const result: ResolvedDocumentation = fromReference;
-      this.cache.set(cacheKey, result);
+      const location = await this.lookup.getDefinitionLocation(candidate, documentUri);
+      const result: ResolvedDocumentation = location ? { ...fromReference, location } : fromReference;
+      this.setCache(cacheKey, result);
       return result;
     }
 
     const location = await this.lookup.getDefinitionLocation(candidate, documentUri);
     if (!location) {
-      this.cache.set(cacheKey, undefined);
+      this.setCache(cacheKey, undefined);
       return undefined;
     }
 
@@ -72,7 +74,20 @@ export class DocumentationResolver {
       this.options.maxHintLength
     );
     const result = fromDefinition ? { ...fromDefinition, location } : undefined;
-    this.cache.set(cacheKey, result);
+    this.setCache(cacheKey, result);
     return result;
+  }
+
+  private setCache(cacheKey: string, result: ResolvedDocumentation | undefined): void {
+    this.cache.set(cacheKey, result);
+    const maxCacheEntries = this.options.maxCacheEntries;
+    if (!maxCacheEntries || this.cache.size <= maxCacheEntries) {
+      return;
+    }
+
+    const oldestKey = this.cache.keys().next().value;
+    if (oldestKey) {
+      this.cache.delete(oldestKey);
+    }
   }
 }

@@ -52,6 +52,7 @@ test('extension contributions use commentDocLens identifiers', () => {
     'commentDocLens.minIdentifierLength',
     'commentDocLens.preferPropertyTail',
     'commentDocLens.dedupeLineHints',
-    'commentDocLens.resolveTimeoutMs'
+    'commentDocLens.resolveTimeoutMs',
+    'commentDocLens.maxCacheEntries'
   ]);
 });

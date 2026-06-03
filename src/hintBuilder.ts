@@ -39,6 +39,8 @@ export interface BuildCommentHintsInput {
 }
 
 const MAX_CONCURRENT_RESOLVES = 4;
+const CANDIDATE_SCAN_MULTIPLIER = 3;
+const MIN_EXTRA_SCAN_CANDIDATES = 10;
 
 export async function buildCommentHints(input: BuildCommentHintsInput): Promise<CommentHint[]> {
   if (!input.config.enabled || !input.config.languages.includes(input.languageId)) {
@@ -49,9 +51,11 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
     input.lines,
     input.range,
     input.languageId,
-    input.config.maxHintsPerRequest
+    getCandidateScanLimit(input.config.maxHintsPerRequest)
   );
-  const candidatesToResolve = candidates.filter((candidate) => shouldResolveCandidate(candidate, input));
+  const candidatesToResolve = dedupeCandidates(
+    candidates.filter((candidate) => shouldResolveCandidate(candidate, input))
+  ).slice(0, input.config.maxHintsPerRequest);
   const resolvedByCandidate = await mapWithConcurrency(
     candidatesToResolve,
     MAX_CONCURRENT_RESOLVES,
@@ -81,6 +85,29 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
   }
 
   return hints;
+}
+
+function getCandidateScanLimit(maxHintsPerRequest: number): number {
+  return Math.max(
+    maxHintsPerRequest * CANDIDATE_SCAN_MULTIPLIER,
+    maxHintsPerRequest + MIN_EXTRA_SCAN_CANDIDATES
+  );
+}
+
+function dedupeCandidates(candidates: readonly SymbolCandidate[]): SymbolCandidate[] {
+  const seen = new Set<string>();
+  const deduped: SymbolCandidate[] = [];
+  for (const candidate of candidates) {
+    const key = `${candidate.word}:${candidate.line}:${candidate.startCharacter}:${candidate.endCharacter}`;
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    deduped.push(candidate);
+  }
+
+  return deduped;
 }
 
 async function resolveCandidate(
