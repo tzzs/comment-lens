@@ -76,6 +76,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       documentUri: document.uri.toString(),
       documentVersion: document.version,
       config,
+      isCancellationRequested: () => token.isCancellationRequested,
       resolver: {
         resolve: async (candidate, documentUri, documentVersion) => {
           if (token.isCancellationRequested) {
@@ -167,7 +168,11 @@ function readCommentDocLensConfig(): CommentDocLensConfig {
   return {
     enabled: config.get<boolean>('enabled', true),
     languages: config.get<string[]>('languages', SUPPORTED_LANGUAGES),
-    maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80)
+    maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80),
+    minIdentifierLength: config.get<number>('minIdentifierLength', 2),
+    preferPropertyTail: config.get<boolean>('preferPropertyTail', true),
+    dedupeLineHints: config.get<boolean>('dedupeLineHints', true),
+    resolveTimeoutMs: config.get<number>('resolveTimeoutMs', 750)
   };
 }
 

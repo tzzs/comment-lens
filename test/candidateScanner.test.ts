@@ -43,3 +43,20 @@ test('respects max candidate limit', () => {
 
   assert.deepEqual(candidates.map((candidate) => candidate.word), ['a', 'one']);
 });
+
+test('scans property chains and jsx identifiers without treating tags as comments or strings', () => {
+  const candidates = scanCandidateSymbols(
+    [
+      'const label = order.status.displayName;',
+      'const view = <StatusBadge status={order.status} />;'
+    ],
+    { startLine: 0, endLineInclusive: 1 },
+    'typescriptreact',
+    20
+  );
+
+  assert.deepEqual(
+    candidates.map((candidate) => candidate.word),
+    ['label', 'order', 'status', 'displayName', 'view', 'StatusBadge', 'status', 'order', 'status']
+  );
+});

@@ -7,6 +7,7 @@ interface PackageJson {
   name: string;
   displayName: string;
   description: string;
+  main: string;
   activationEvents: string[];
   contributes: {
     commands: Array<{ command: string; title: string }>;
@@ -27,6 +28,7 @@ test('project metadata uses Comment Doc Lens naming', () => {
   assert.equal(packageJson.name, 'comment-doc-lens');
   assert.equal(packageJson.displayName, 'Comment Doc Lens');
   assert.equal(packageJson.description, 'Show definition comments and symbol documentation inline at reference sites.');
+  assert.equal(packageJson.main, './out/src/extension.js');
 });
 
 test('extension contributions use commentDocLens identifiers', () => {
@@ -46,6 +48,10 @@ test('extension contributions use commentDocLens identifiers', () => {
     'commentDocLens.enabled',
     'commentDocLens.languages',
     'commentDocLens.maxHintLength',
-    'commentDocLens.maxHintsPerRequest'
+    'commentDocLens.maxHintsPerRequest',
+    'commentDocLens.minIdentifierLength',
+    'commentDocLens.preferPropertyTail',
+    'commentDocLens.dedupeLineHints',
+    'commentDocLens.resolveTimeoutMs'
   ]);
 });
