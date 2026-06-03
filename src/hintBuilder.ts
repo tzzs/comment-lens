@@ -1,7 +1,7 @@
 import { scanCandidateSymbols, type LineRange, type SymbolCandidate } from './candidateScanner';
 import type { LocationLike, ResolvedDocumentation } from './documentationResolver';
 
-export interface SymbolDocLensConfig {
+export interface CommentDocLensConfig {
   enabled: boolean;
   languages: readonly string[];
   maxHintsPerRequest: number;
@@ -29,7 +29,7 @@ export interface BuildCommentHintsInput {
   languageId: string;
   documentUri: string;
   documentVersion: number;
-  config: SymbolDocLensConfig;
+  config: CommentDocLensConfig;
   resolver: CommentHintResolver;
 }
 

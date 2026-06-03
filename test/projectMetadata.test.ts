@@ -21,31 +21,31 @@ function readPackageJson(): PackageJson {
   return JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as PackageJson;
 }
 
-test('project metadata uses Symbol Doc Lens naming', () => {
+test('project metadata uses Comment Doc Lens naming', () => {
   const packageJson = readPackageJson();
 
-  assert.equal(packageJson.name, 'symbol-doc-lens');
-  assert.equal(packageJson.displayName, 'Symbol Doc Lens');
-  assert.equal(packageJson.description, 'Show symbol documentation inline at reference sites.');
+  assert.equal(packageJson.name, 'comment-doc-lens');
+  assert.equal(packageJson.displayName, 'Comment Doc Lens');
+  assert.equal(packageJson.description, 'Show definition comments and symbol documentation inline at reference sites.');
 });
 
-test('extension contributions use symbolDocLens identifiers', () => {
+test('extension contributions use commentDocLens identifiers', () => {
   const packageJson = readPackageJson();
 
   assert.deepEqual(packageJson.activationEvents.slice(-2), [
-    'onCommand:symbolDocLens.toggle',
-    'onCommand:symbolDocLens.refresh'
+    'onCommand:commentDocLens.toggle',
+    'onCommand:commentDocLens.refresh'
   ]);
 
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.command),
-    ['symbolDocLens.toggle', 'symbolDocLens.refresh']
+    ['commentDocLens.toggle', 'commentDocLens.refresh']
   );
-  assert.equal(packageJson.contributes.configuration.title, 'Symbol Doc Lens');
+  assert.equal(packageJson.contributes.configuration.title, 'Comment Doc Lens');
   assert.deepEqual(Object.keys(packageJson.contributes.configuration.properties), [
-    'symbolDocLens.enabled',
-    'symbolDocLens.languages',
-    'symbolDocLens.maxHintLength',
-    'symbolDocLens.maxHintsPerRequest'
+    'commentDocLens.enabled',
+    'commentDocLens.languages',
+    'commentDocLens.maxHintLength',
+    'commentDocLens.maxHintsPerRequest'
   ]);
 });
