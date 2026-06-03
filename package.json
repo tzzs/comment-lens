@@ -1,0 +1,82 @@
+{
+  "name": "vs-show-comment",
+  "displayName": "Show Comment",
+  "description": "Show definition comments for referenced symbols as VS Code inlay hints.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:go",
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascriptreact",
+    "onCommand:showComment.toggle",
+    "onCommand:showComment.refresh"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "showComment.toggle",
+        "title": "Show Comment: Toggle"
+      },
+      {
+        "command": "showComment.refresh",
+        "title": "Show Comment: Refresh"
+      }
+    ],
+    "configuration": {
+      "title": "Show Comment",
+      "properties": {
+        "showComment.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Show Comment inlay hints."
+        },
+        "showComment.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "go",
+            "typescript",
+            "javascript",
+            "typescriptreact",
+            "javascriptreact"
+          ],
+          "description": "Language identifiers where Show Comment runs."
+        },
+        "showComment.maxHintLength": {
+          "type": "number",
+          "default": 80,
+          "minimum": 20,
+          "description": "Maximum length of the inline comment summary."
+        },
+        "showComment.maxHintsPerRequest": {
+          "type": "number",
+          "default": 80,
+          "minimum": 1,
+          "description": "Maximum number of hints produced per inlay hint request."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test": "npm run compile && node --test out/test/*.test.js",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/vscode": "^1.101.0",
+    "typescript": "^5.5.2"
+  }
+}
