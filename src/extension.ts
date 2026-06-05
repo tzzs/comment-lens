@@ -1,8 +1,14 @@
 import * as vscode from 'vscode';
 import type { SymbolCandidate } from './candidateScanner';
-import { DocumentationResolver, type DocumentationLookup, type LocationLike } from './documentationResolver';
+import {
+  DocumentationResolver,
+  type DocumentationLookup,
+  type DocumentationResolverOptions,
+  type LocationLike
+} from './documentationResolver';
 import { buildCommentHints, type CommentDocLensConfig } from './hintBuilder';
 import { hoverContentsToMarkdownLines } from './hoverContent';
+import { collectLeadingCommentLines, findGoDefinitionLine } from './sourceCommentExtractor';
 
 const SUPPORTED_LANGUAGES = [
   'go',
@@ -76,6 +82,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       documentUri: document.uri.toString(),
       documentVersion: document.version,
       config,
+      isCancellationRequested: () => token.isCancellationRequested,
       resolver: {
         resolve: async (candidate, documentUri, documentVersion) => {
           if (token.isCancellationRequested) {
@@ -92,10 +99,6 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
 
     return hints.map((hint) => {
       const labelPart = new vscode.InlayHintLabelPart(hint.label);
-      if (hint.location) {
-        labelPart.location = toVscodeLocation(hint.location);
-      }
-      labelPart.tooltip = new vscode.MarkdownString(hint.tooltip);
 
       const inlayHint = new vscode.InlayHint(
         new vscode.Position(hint.line, hint.character),
@@ -103,7 +106,6 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
         vscode.InlayHintKind.Parameter
       );
       inlayHint.paddingLeft = true;
-      inlayHint.tooltip = new vscode.MarkdownString(hint.tooltip);
       return inlayHint;
     });
   }
@@ -115,14 +117,20 @@ class VscodeDocumentationLookup implements DocumentationLookup {
   }
 
   async getDefinitionLocation(candidate: SymbolCandidate, documentUri: string): Promise<LocationLike | undefined> {
-    const definitions = await vscode.commands.executeCommand<Array<vscode.Location | vscode.LocationLink>>(
-      'vscode.executeDefinitionProvider',
-      vscode.Uri.parse(documentUri),
-      new vscode.Position(candidate.line, candidate.startCharacter)
-    );
+    const uri = vscode.Uri.parse(documentUri);
+    let definitions: Array<vscode.Location | vscode.LocationLink> | undefined;
+    try {
+      definitions = await vscode.commands.executeCommand<Array<vscode.Location | vscode.LocationLink>>(
+        'vscode.executeDefinitionProvider',
+        uri,
+        new vscode.Position(candidate.line, candidate.startCharacter)
+      );
+    } catch {
+      definitions = undefined;
+    }
     const firstDefinition = definitions?.[0];
     if (!firstDefinition) {
-      return undefined;
+      return this.getLocalDefinitionLocation(candidate, uri);
     }
 
     if ('targetUri' in firstDefinition) {
@@ -140,8 +148,34 @@ class VscodeDocumentationLookup implements DocumentationLookup {
     };
   }
 
+  private async getLocalDefinitionLocation(
+    candidate: SymbolCandidate,
+    uri: vscode.Uri
+  ): Promise<LocationLike | undefined> {
+    if (!isGoFileUri(uri)) {
+      return undefined;
+    }
+
+    const document = await vscode.workspace.openTextDocument(uri);
+    const definitionLine = findGoDefinitionLine(document, candidate.word, candidate.line);
+    if (definitionLine === undefined) {
+      return undefined;
+    }
+
+    return {
+      uri: uri.toString(),
+      line: definitionLine.line,
+      character: definitionLine.character
+    };
+  }
+
   async getHoverMarkdownLinesAtLocation(location: LocationLike): Promise<string[]> {
     return getHoverLines(vscode.Uri.parse(location.uri), new vscode.Position(location.line, location.character));
+  }
+
+  async getDefinitionSourceLines(location: LocationLike, candidate: SymbolCandidate): Promise<string[]> {
+    const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(location.uri));
+    return collectLeadingCommentLines(document, findNearbyDefinitionLine(document, location.line, candidate.word));
   }
 }
 
@@ -167,20 +201,47 @@ function readCommentDocLensConfig(): CommentDocLensConfig {
   return {
     enabled: config.get<boolean>('enabled', true),
     languages: config.get<string[]>('languages', SUPPORTED_LANGUAGES),
-    maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80)
+    maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80),
+    minIdentifierLength: config.get<number>('minIdentifierLength', 2),
+    preferPropertyTail: config.get<boolean>('preferPropertyTail', true),
+    dedupeLineHints: config.get<boolean>('dedupeLineHints', true),
+    resolveTimeoutMs: config.get<number>('resolveTimeoutMs', 750),
+    hintPrefix: config.get<string>('hintPrefix', '// ')
   };
 }
 
-function readResolverOptions(): { maxHintLength: number } {
+function readResolverOptions(): DocumentationResolverOptions {
   const config = vscode.workspace.getConfiguration('commentDocLens');
   return {
-    maxHintLength: config.get<number>('maxHintLength', 80)
+    maxHintLength: config.get<number>('maxHintLength', 120),
+    maxCacheEntries: config.get<number>('maxCacheEntries', 1000)
   };
 }
 
-function toVscodeLocation(location: LocationLike): vscode.Location {
-  return new vscode.Location(
-    vscode.Uri.parse(location.uri),
-    new vscode.Position(location.line, location.character)
-  );
+function findNearbyDefinitionLine(document: vscode.TextDocument, startLine: number, word: string): number {
+  const start = Math.max(0, startLine - 3);
+  const end = Math.min(document.lineCount - 1, startLine + 8);
+  const declarationPattern = new RegExp(`\\b${escapeRegExp(word)}\\b`);
+
+  for (let line = startLine; line <= end; line++) {
+    if (declarationPattern.test(document.lineAt(line).text)) {
+      return line;
+    }
+  }
+
+  for (let line = startLine - 1; line >= start; line--) {
+    if (declarationPattern.test(document.lineAt(line).text)) {
+      return line;
+    }
+  }
+
+  return startLine;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isGoFileUri(uri: vscode.Uri): boolean {
+  return uri.scheme === 'file' && uri.fsPath.endsWith('.go');
 }
