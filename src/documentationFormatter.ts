@@ -20,6 +20,7 @@ export function formatDocumentation(
 
 function normalizeDocumentation(markdownLines: readonly string[]): string[] {
   const lines: string[] = [];
+  const seen = new Set<string>();
   let inCodeBlock = false;
 
   for (const rawLine of markdownLines) {
@@ -35,7 +36,8 @@ function normalizeDocumentation(markdownLines: readonly string[]): string[] {
     }
 
     const cleaned = cleanCommentMarker(trimmed);
-    if (cleaned.length > 0) {
+    if (cleaned.length > 0 && !seen.has(cleaned)) {
+      seen.add(cleaned);
       lines.push(cleaned);
     }
   }
@@ -57,5 +59,9 @@ function truncate(value: string, maxLength: number): string {
     return value;
   }
 
-  return `${value.slice(0, Math.max(0, maxLength - 1))}...`;
+  if (maxLength <= 3) {
+    return '.'.repeat(Math.max(0, maxLength));
+  }
+
+  return `${value.slice(0, maxLength - 3)}...`;
 }

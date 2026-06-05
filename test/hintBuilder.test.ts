@@ -35,7 +35,7 @@ test('builds inlay hints from resolved candidate documentation', async () => {
   assert.deepEqual(hints, [
     {
       line: 0,
-      character: 30,
+      character: 31,
       label: '// 已支付订单',
       tooltip: '已支付订单\n用于订单列表展示',
       location: { uri: 'file:///status.ts', line: 1, character: 13 }
@@ -260,7 +260,7 @@ test('dedupes repeated line summaries and prefers a location-bearing hint', asyn
   assert.deepEqual(hints, [
     {
       line: 0,
-      character: 30,
+      character: 31,
       label: '// 已支付订单',
       tooltip: '已支付订单',
       location: { uri: 'file:///status.ts', line: 1, character: 1 }
@@ -332,9 +332,153 @@ test('skips common declaration names and jsx tag names', async () => {
   });
 
   assert.equal(resolvedWords.includes('StatusBadge'), false);
+  assert.equal(resolvedWords.includes('props'), false);
+  assert.equal(resolvedWords.includes('string'), false);
   assert.equal(resolvedWords.includes('ReadyStatus'), true);
   assert.equal(hints.some((hint) => hint.label === '// doc for StatusBadge'), false);
   assert.equal(hints.some((hint) => hint.label === '// doc for ReadyStatus'), true);
+});
+
+test('skips jsx attribute names', async () => {
+  const resolvedWords: string[] = [];
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) => {
+      resolvedWords.push(candidate.word);
+      return {
+        summary: `doc for ${candidate.word}`,
+        fullText: `doc for ${candidate.word}`
+      };
+    }
+  };
+
+  await buildCommentHints({
+    lines: ['export const view = <StatusBadge status={ReadyStatus} />;'],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'typescriptreact',
+    documentUri: 'file:///view.tsx',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescriptreact'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.equal(resolvedWords.includes('status'), false);
+  assert.equal(resolvedWords.includes('ReadyStatus'), true);
+});
+
+test('skips go declaration names', async () => {
+  const resolvedWords: string[] = [];
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) => {
+      resolvedWords.push(candidate.word);
+      return {
+        summary: `doc for ${candidate.word}`,
+        fullText: `doc for ${candidate.word}`
+      };
+    }
+  };
+
+  await buildCommentHints({
+    lines: [
+      'func FormatOrderStatus(status OrderStatus) string {',
+      'func (OrderPresenter) DisplayLabel(status OrderStatus) string {',
+      '\tOrderStatusPaid OrderStatus = "paid"',
+      '\tstatus := OrderStatusPaid'
+    ],
+    range: { startLine: 0, endLineInclusive: 3 },
+    languageId: 'go',
+    documentUri: 'file:///order.go',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['go'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.equal(resolvedWords.includes('FormatOrderStatus'), false);
+  assert.equal(resolvedWords.includes('DisplayLabel'), false);
+  assert.equal(resolvedWords.includes('status'), false);
+  assert.equal(resolvedWords.includes('OrderStatus'), false);
+  assert.equal(resolvedWords.includes('OrderStatusPaid'), true);
+});
+
+test('keeps go case label references', async () => {
+  const resolvedWords: string[] = [];
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) => {
+      resolvedWords.push(candidate.word);
+      return {
+        summary: `doc for ${candidate.word}`,
+        fullText: `doc for ${candidate.word}`
+      };
+    }
+  };
+
+  const hints = await buildCommentHints({
+    lines: ['case OrderStatusPaid:'],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'go',
+    documentUri: 'file:///order.go',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['go'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.deepEqual(resolvedWords, ['OrderStatusPaid']);
+  assert.deepEqual(hints.map((hint) => hint.label), ['// doc for OrderStatusPaid']);
+});
+
+test('allows slower go resolver responses than the configured base timeout', async () => {
+  const resolver: CommentHintResolver = {
+    resolve: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return {
+        summary: 'go documentation',
+        fullText: 'go documentation'
+      };
+    }
+  };
+
+  const hints = await buildCommentHints({
+    lines: ['status := OrderStatusPaid'],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'go',
+    documentUri: 'file:///order.go',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['go'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 1
+    },
+    resolver
+  });
+
+  assert.deepEqual(hints.map((hint) => hint.label), ['// go documentation']);
 });
 
 test('limits concurrent resolver calls', async () => {
@@ -404,4 +548,44 @@ test('drops resolver results that exceed the configured timeout', async () => {
   });
 
   assert.deepEqual(hints, []);
+});
+
+test('uses custom hint prefix and places hints at line end', async () => {
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) =>
+      candidate.word === 'status'
+        ? {
+            summary: '业务状态',
+            fullText: '业务状态'
+          }
+        : undefined
+  };
+
+  const hints = await buildCommentHints({
+    lines: ['console.log(status);'],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'typescript',
+    documentUri: 'file:///order.ts',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescript'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750,
+      hintPrefix: ' // doc: '
+    },
+    resolver
+  });
+
+  assert.deepEqual(hints, [
+    {
+      line: 0,
+      character: 20,
+      label: ' // doc: 业务状态',
+      tooltip: '业务状态'
+    }
+  ]);
 });

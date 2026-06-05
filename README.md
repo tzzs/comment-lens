@@ -10,6 +10,9 @@ Comment Doc Lens shows symbol documentation comments, not runtime values. It sca
 
 The default TypeScript and JavaScript path is verified for constants, variables, enum members, functions, class methods, object methods, TSX references, and JSDoc. Go support depends on the official Go extension and gopls.
 
+Hints are rendered at the end of the source line so they do not split expressions in the middle of a statement. The text prefix defaults to `// ` and can be customized with `commentDocLens.hintPrefix`.
+By default, the first useful documentation line is truncated to 120 characters. You can tune this with `commentDocLens.maxHintLength`.
+
 ## Noise and performance controls
 
 The extension filters declaration names, JSX tag names, and intermediate property-chain segments by default. It also deduplicates repeated line summaries, limits concurrent documentation lookups, times out slow lookups, and bounds resolver cache growth.
@@ -23,7 +26,8 @@ Relevant settings:
 - `commentDocLens.dedupeLineHints`
 - `commentDocLens.resolveTimeoutMs`
 - `commentDocLens.maxCacheEntries`
+- `commentDocLens.hintPrefix`
 
 ## Known limits
 
-Comment Doc Lens only runs for `file` documents in the configured first-version languages. Coverage and wording depend on each language service's hover and definition providers. Timeout handling prevents stale hints from being displayed, but VS Code command calls that are already in flight cannot be forcibly cancelled by this extension.
+Comment Doc Lens only runs for `file` documents in the configured first-version languages. Coverage and wording depend on each language service's hover and definition providers. When hover has no usable documentation, the extension also tries to read leading source comments near the definition, which improves Go behavior when gopls returns signature-only hover content. Timeout handling prevents stale hints from being displayed, but VS Code command calls that are already in flight cannot be forcibly cancelled by this extension.

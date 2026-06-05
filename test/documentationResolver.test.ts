@@ -61,6 +61,46 @@ test('falls back to definition hover when reference hover has no documentation',
   assert.deepEqual(result?.location, { uri: 'file:///status.go', line: 8, character: 6 });
 });
 
+test('falls back to source comments near the definition when hover has no documentation', async () => {
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => ['```go', 'const OrderStatusPaid OrderStatus = "paid"', '```'],
+    getDefinitionLocation: async () => ({ uri: 'file:///status.go', line: 3, character: 6 }),
+    getHoverMarkdownLinesAtLocation: async () => ['```go', 'const OrderStatusPaid OrderStatus = "paid"', '```'],
+    getDefinitionSourceLines: async () => ['// Paid status from source comment.']
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80 });
+
+  const result = await resolver.resolve({
+    word: 'OrderStatusPaid',
+    line: 8,
+    startCharacter: 12,
+    endCharacter: 27
+  });
+
+  assert.equal(result?.summary, 'Paid status from source comment.');
+  assert.deepEqual(result?.location, { uri: 'file:///status.go', line: 3, character: 6 });
+});
+
+test('prefers go source comments over non-comment reference hover text', async () => {
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => ['OrderStatusPaid is declared in package status.'],
+    getDefinitionLocation: async () => ({ uri: 'file:///status.go?version=1#L3', line: 3, character: 6 }),
+    getHoverMarkdownLinesAtLocation: async () => ['```go', 'const OrderStatusPaid OrderStatus = "paid"', '```'],
+    getDefinitionSourceLines: async () => ['// Paid status from source comment.']
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80 });
+
+  const result = await resolver.resolve({
+    word: 'OrderStatusPaid',
+    line: 8,
+    startCharacter: 12,
+    endCharacter: 27
+  });
+
+  assert.equal(result?.summary, 'Paid status from source comment.');
+  assert.deepEqual(result?.location, { uri: 'file:///status.go?version=1#L3', line: 3, character: 6 });
+});
+
 test('caches repeated lookups by document version and candidate position', async () => {
   let hoverCalls = 0;
   const lookup: DocumentationLookup = {
@@ -131,7 +171,7 @@ test('updates max hint length after configuration changes', async () => {
   resolver.updateOptions({ maxHintLength: 8 });
   const result = await resolver.resolve(candidate, 'file:///order.ts', 3);
 
-  assert.equal(result?.summary, '这是一个非常非...');
+  assert.equal(result?.summary, '这是一个非...');
 });
 
 test('bounds cache size and evicts the oldest lookup', async () => {

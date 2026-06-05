@@ -5,6 +5,16 @@ import * as vscode from 'vscode';
 
 const FIXTURE_ROOT = resolve(__dirname, '../../../../test/integration/fixtures/workspace');
 
+interface HintSnapshot {
+  label: string;
+  line: number;
+  character: number;
+  lineEndCharacter: number;
+  hasTopLevelTooltip: boolean;
+  labelTooltipCount: number;
+  labelLocationCount: number;
+}
+
 export async function run(): Promise<void> {
   await activateCommentDocLens();
 
@@ -31,17 +41,51 @@ export async function run(): Promise<void> {
     assertNoHintIncludes(hints, 'StatusBadge component.');
   });
 
-  await runTest('Go documentation shows when Go language support is available', async () => {
-    const goExtension = vscode.extensions.getExtension('golang.go');
-    const languages = await vscode.languages.getLanguages();
-    if (!goExtension || !languages.includes('go') || !existsSync(resolve(FIXTURE_ROOT, 'order.go'))) {
-      console.log('Skipping Go integration test: Go extension or language support is not available.');
+  await runTest('inlay hints are positioned at source line ends', async () => {
+    const hints = await getHintsForFixture('order.ts');
+    assert.ok(hints.length > 0, 'Expected TypeScript fixture to produce hints.');
+    assert.ok(
+      hints.every((hint) => hint.character === hint.lineEndCharacter),
+      `Expected all hints to be at line end: ${JSON.stringify(hints)}`
+    );
+  });
+
+  await runTest('custom hint prefix is applied through VS Code configuration', async () => {
+    const config = vscode.workspace.getConfiguration('commentDocLens');
+    await config.update('hintPrefix', 'doc: ', vscode.ConfigurationTarget.Global);
+    try {
+      await vscode.commands.executeCommand('commentDocLens.refresh');
+      const hints = await getHintsForFixture('order.js');
+      assert.ok(
+        hints.some((hint) => hint.label.startsWith('doc: ')),
+        `Expected custom prefix in ${JSON.stringify(hints)}`
+      );
+    } finally {
+      await config.update('hintPrefix', undefined, vscode.ConfigurationTarget.Global);
+      await vscode.commands.executeCommand('commentDocLens.refresh');
+    }
+  });
+
+  await runTest('inlay hints are display-only without hover or jump actions', async () => {
+    const hints = await getHintsForFixture('order.ts');
+    assert.ok(hints.length > 0, 'Expected TypeScript fixture to produce hints.');
+    assert.ok(
+      hints.every((hint) => !hint.hasTopLevelTooltip && hint.labelTooltipCount === 0 && hint.labelLocationCount === 0),
+      `Expected inlay hints to stay display-only: ${JSON.stringify(hints)}`
+    );
+  });
+
+  await runTest('Go documentation shows from local source fallback', async () => {
+    if (!existsSync(resolve(FIXTURE_ROOT, 'order.go'))) {
+      console.log('Skipping Go integration test: fixture file is not available.');
       return;
     }
 
-    await goExtension.activate();
-    const hints = await getHintsForFixture('order.go');
+    const hints = await getHintsForFixture('order.go', 'go');
     assertHintIncludes(hints, 'Paid order status in Go.');
+    assertHintIncludes(hints, 'Refunded order status in Go.');
+    assertHintIncludes(hints, 'FormatOrderStatus formats an order status in Go.');
+    assertHintIncludes(hints, 'DisplayLabel returns the display label in Go.');
   });
 }
 
@@ -61,8 +105,11 @@ async function runTest(name: string, testBody: () => Promise<void>): Promise<voi
   }
 }
 
-async function getHintsForFixture(fileName: string): Promise<string[]> {
-  const document = await vscode.workspace.openTextDocument(resolve(FIXTURE_ROOT, fileName));
+async function getHintsForFixture(fileName: string, languageId?: string): Promise<HintSnapshot[]> {
+  let document = await vscode.workspace.openTextDocument(resolve(FIXTURE_ROOT, fileName));
+  if (languageId && document.languageId !== languageId) {
+    document = await vscode.languages.setTextDocumentLanguage(document, languageId);
+  }
   await vscode.window.showTextDocument(document);
 
   const range = new vscode.Range(
@@ -78,7 +125,19 @@ async function getHintsForFixture(fileName: string): Promise<string[]> {
       document.uri,
       range
     );
-    return (result ?? []).map(labelToString);
+    return (result ?? []).map((hint) => ({
+      label: labelToString(hint),
+      line: hint.position.line,
+      character: hint.position.character,
+      lineEndCharacter: document.lineAt(hint.position.line).text.length,
+      hasTopLevelTooltip: Boolean(hint.tooltip),
+      labelTooltipCount: Array.isArray(hint.label)
+        ? hint.label.filter((part) => Boolean(part.tooltip)).length
+        : 0,
+      labelLocationCount: Array.isArray(hint.label)
+        ? hint.label.filter((part) => Boolean(part.location)).length
+        : 0
+    }));
   });
 
   return hints;
@@ -105,16 +164,16 @@ function labelToString(hint: vscode.InlayHint): string {
   return hint.label.map((part) => part.value).join('');
 }
 
-function assertHintIncludes(hints: readonly string[], expected: string): void {
+function assertHintIncludes(hints: readonly HintSnapshot[], expected: string): void {
   assert.ok(
-    hints.some((hint) => hint.includes(expected)),
+    hints.some((hint) => hint.label.includes(expected)),
     `Expected one of ${JSON.stringify(hints)} to include ${JSON.stringify(expected)}`
   );
 }
 
-function assertNoHintIncludes(hints: readonly string[], unexpected: string): void {
+function assertNoHintIncludes(hints: readonly HintSnapshot[], unexpected: string): void {
   assert.ok(
-    hints.every((hint) => !hint.includes(unexpected)),
+    hints.every((hint) => !hint.label.includes(unexpected)),
     `Expected none of ${JSON.stringify(hints)} to include ${JSON.stringify(unexpected)}`
   );
 }

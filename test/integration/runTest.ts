@@ -9,7 +9,13 @@ async function main(): Promise<void> {
   await runTests({
     extensionDevelopmentPath,
     extensionTestsPath,
-    launchArgs: [fixtureWorkspacePath]
+    launchArgs: [
+      fixtureWorkspacePath,
+      '--disable-gpu',
+      '--disable-workspace-trust',
+      '--skip-welcome',
+      '--skip-release-notes'
+    ]
   });
 }
 

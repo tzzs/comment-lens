@@ -15,6 +15,7 @@ export interface DocumentationLookup {
   getHoverMarkdownLines(candidate: SymbolCandidate, documentUri: string): Promise<string[]>;
   getDefinitionLocation(candidate: SymbolCandidate, documentUri: string): Promise<LocationLike | undefined>;
   getHoverMarkdownLinesAtLocation(location: LocationLike): Promise<string[]>;
+  getDefinitionSourceLines?(location: LocationLike, candidate: SymbolCandidate): Promise<string[]>;
 }
 
 export interface DocumentationResolverOptions {
@@ -58,7 +59,10 @@ export class DocumentationResolver {
     );
     if (fromReference) {
       const location = await this.lookup.getDefinitionLocation(candidate, documentUri);
-      const result: ResolvedDocumentation = location ? { ...fromReference, location } : fromReference;
+      const fromSource = location ? await this.getSourceDocumentation(location, candidate) : undefined;
+      const result: ResolvedDocumentation = location
+        ? { ...(fromSource ?? fromReference), location }
+        : fromReference;
       this.setCache(cacheKey, result);
       return result;
     }
@@ -73,9 +77,24 @@ export class DocumentationResolver {
       await this.lookup.getHoverMarkdownLinesAtLocation(location),
       this.options.maxHintLength
     );
-    const result = fromDefinition ? { ...fromDefinition, location } : undefined;
+    const fromSource = fromDefinition ?? await this.getSourceDocumentation(location, candidate);
+    const result = fromSource ? { ...fromSource, location } : undefined;
     this.setCache(cacheKey, result);
     return result;
+  }
+
+  private async getSourceDocumentation(
+    location: LocationLike,
+    candidate: SymbolCandidate
+  ): Promise<FormattedDocumentation | undefined> {
+    if (!isGoUri(location.uri)) {
+      return undefined;
+    }
+
+    return formatDocumentation(
+      await this.lookup.getDefinitionSourceLines?.(location, candidate) ?? [],
+      this.options.maxHintLength
+    );
   }
 
   private setCache(cacheKey: string, result: ResolvedDocumentation | undefined): void {
@@ -89,5 +108,13 @@ export class DocumentationResolver {
     if (oldestKey) {
       this.cache.delete(oldestKey);
     }
+  }
+}
+
+function isGoUri(uri: string): boolean {
+  try {
+    return decodeURIComponent(new URL(uri).pathname).endsWith('.go');
+  } catch {
+    return uri.split(/[?#]/, 1)[0].endsWith('.go');
   }
 }
