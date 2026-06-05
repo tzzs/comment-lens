@@ -20,6 +20,6 @@ jobs:
       - name: Create or update release PR
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          token: ${{ secrets.PAT_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
