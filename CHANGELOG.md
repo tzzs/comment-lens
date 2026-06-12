@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.1.0...comment-doc-lens-v0.2.0) (2026-06-12)
+
+
+### Features
+
+* **extension:** add marketplace icon ([#6](https://github.com/tzzs/comment-doc-lens/issues/6)) ([cd30e2a](https://github.com/tzzs/comment-doc-lens/commit/cd30e2ad4e845f030e8f51a4b7e4bc929f7cb3c9))
+
 ## [0.1.0](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.0.5...comment-doc-lens-v0.1.0) (2026-06-12)
 
 
