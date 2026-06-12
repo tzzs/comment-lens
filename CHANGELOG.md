@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.2.0...comment-doc-lens-v0.2.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **extension:** use transparent marketplace icon ([#8](https://github.com/tzzs/comment-doc-lens/issues/8)) ([381c018](https://github.com/tzzs/comment-doc-lens/commit/381c0186abc1b1fbb86a12e56321f9087b18ce8e))
+
 ## [0.2.0](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.1.0...comment-doc-lens-v0.2.0) (2026-06-12)
 
 
