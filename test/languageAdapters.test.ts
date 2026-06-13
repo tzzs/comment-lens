@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { SymbolCandidate } from '../src/candidateScanner';
 import {
+  csharpLanguageAdapter,
   goLanguageAdapter,
   javaLanguageAdapter,
   pythonLanguageAdapter,
@@ -126,6 +127,12 @@ test('rust adapter owns declaration filtering and doc comment fallback behavior'
   assert.deepEqual(rustLanguageAdapter.sourceComment?.collectLeadingComments(document, 8), [
     '/// Paid order status.'
   ]);
+});
+
+test('csharp adapter is hover-only and does not enable source fallback yet', () => {
+  assert.equal(csharpLanguageAdapter.supportLevel, 'hover-only');
+  assert.deepEqual(csharpLanguageAdapter.languageIds, ['csharp']);
+  assert.equal(csharpLanguageAdapter.sourceComment, undefined);
 });
 
 function candidate(word: string, startCharacter: number, line = 0): SymbolCandidate {

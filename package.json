@@ -19,6 +19,7 @@
   ],
   "keywords": [
     "comments",
+    "csharp",
     "documentation",
     "inlay hints",
     "go",
@@ -46,6 +47,7 @@
     "onLanguage:python",
     "onLanguage:java",
     "onLanguage:rust",
+    "onLanguage:csharp",
     "onCommand:commentDocLens.toggle",
     "onCommand:commentDocLens.refresh"
   ],
@@ -82,7 +84,8 @@
             "javascriptreact",
             "python",
             "java",
-            "rust"
+            "rust",
+            "csharp"
           ],
           "description": "Language identifiers where Comment Doc Lens runs."
         },

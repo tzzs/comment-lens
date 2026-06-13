@@ -104,12 +104,19 @@ export const rustLanguageAdapter: LanguageAdapter = {
   }
 };
 
+export const csharpLanguageAdapter: LanguageAdapter = {
+  languageIds: ['csharp'],
+  displayName: 'C#',
+  supportLevel: 'hover-only'
+};
+
 export const defaultLanguageAdapters = [
   goLanguageAdapter,
   typescriptFamilyLanguageAdapter,
   pythonLanguageAdapter,
   javaLanguageAdapter,
-  rustLanguageAdapter
+  rustLanguageAdapter,
+  csharpLanguageAdapter
 ] as const satisfies readonly LanguageAdapter[];
 
 export function createLanguageRegistry(adapters: readonly LanguageAdapter[]): LanguageRegistry {
