@@ -3,6 +3,7 @@ import test from 'node:test';
 import type { SymbolCandidate } from '../src/candidateScanner';
 import {
   goLanguageAdapter,
+  javaLanguageAdapter,
   pythonLanguageAdapter,
   typescriptFamilyLanguageAdapter
 } from '../src/languages/languageRegistry';
@@ -55,6 +56,40 @@ test('python adapter owns declaration filtering and docstring fallback behavior'
   ]);
   assert.deepEqual(pythonLanguageAdapter.sourceComment?.collectLeadingComments(document, 6), [
     'Builds order labels.'
+  ]);
+});
+
+test('java adapter owns declaration filtering and javadoc fallback behavior', () => {
+  assert.equal(javaLanguageAdapter.supportLevel, 'experimental');
+  assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 13), 'public class OrderPresenter {'), true);
+  assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('formatStatus', 16), '  public String formatStatus(String status) {'), true);
+  assert.equal(javaLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.java', line: 0, character: 0 }), true);
+  assert.equal(javaLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.py', line: 0, character: 0 }), false);
+
+  const document = lines([
+    '/**',
+    ' * Presents order data.',
+    ' */',
+    'public class OrderPresenter {',
+    '  /** Format the order status. */',
+    '  public String formatStatus(String status) {',
+    '    return status;',
+    '  }',
+    '}'
+  ]);
+
+  assert.equal(javaLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('formatStatus', 19, 6), {
+    uri: 'file:///OrderPresenter.java',
+    line: 6,
+    character: 0
+  }), 5);
+  assert.deepEqual(javaLanguageAdapter.sourceComment?.collectLeadingComments(document, 3), [
+    '/**',
+    '* Presents order data.',
+    '*/'
+  ]);
+  assert.deepEqual(javaLanguageAdapter.sourceComment?.collectLeadingComments(document, 5), [
+    '/** Format the order status. */'
   ]);
 });
 

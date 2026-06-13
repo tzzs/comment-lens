@@ -64,10 +64,31 @@ export const pythonLanguageAdapter: LanguageAdapter = {
   }
 };
 
+export const javaLanguageAdapter: LanguageAdapter = {
+  languageIds: ['java'],
+  displayName: 'Java',
+  supportLevel: 'experimental',
+  isDeclarationCandidate(candidate, line) {
+    return isJavaDeclarationName(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.java');
+    },
+    findDefinitionLine(document, candidate) {
+      return findJavaDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingBlockCommentLines(document, definitionLine);
+    }
+  }
+};
+
 export const defaultLanguageAdapters = [
   goLanguageAdapter,
   typescriptFamilyLanguageAdapter,
-  pythonLanguageAdapter
+  pythonLanguageAdapter,
+  javaLanguageAdapter
 ] as const satisfies readonly LanguageAdapter[];
 
 export function createLanguageRegistry(adapters: readonly LanguageAdapter[]): LanguageRegistry {
@@ -318,4 +339,67 @@ function readPythonTripleQuotedString(
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isJavaDeclarationName(candidate: { word: string; startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  if (/\b(?:class|enum|interface|record)\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  return afterCandidate.startsWith('(');
+}
+
+function findJavaDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  const definitionPatterns = [
+    new RegExp(`\\b(?:class|enum|interface|record)\\s+${wordPattern}\\b`),
+    new RegExp(`\\b${wordPattern}\\s*\\(`),
+    new RegExp(`\\b${wordPattern}\\s*(?:=|;)`)
+  ];
+
+  for (let line = 0; line < document.lineCount; line++) {
+    if (line === referenceLine) {
+      continue;
+    }
+
+    const text = document.lineAt(line).text;
+    if (definitionPatterns.some((pattern) => pattern.test(text))) {
+      return line;
+    }
+  }
+
+  return undefined;
+}
+
+function collectLeadingBlockCommentLines(document: { lineAt(line: number): { text: string }; lineCount: number }, definitionLine: number): string[] {
+  const collected: string[] = [];
+  let line = definitionLine - 1;
+  let foundEnd = false;
+
+  while (line >= 0) {
+    const text = document.lineAt(line).text.trim();
+    if (text.length === 0 && !foundEnd) {
+      line--;
+      continue;
+    }
+
+    if (!foundEnd && text.endsWith('*/')) {
+      foundEnd = true;
+    }
+
+    if (!foundEnd) {
+      break;
+    }
+
+    collected.unshift(text);
+    if (text.startsWith('/**')) {
+      return collected;
+    }
+
+    line--;
+  }
+
+  return [];
 }
