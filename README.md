@@ -10,6 +10,8 @@ Comment Doc Lens shows symbol documentation comments, not runtime values. It sca
 
 The default TypeScript and JavaScript path is verified for constants, variables, enum members, functions, class methods, object methods, TSX references, and JSDoc. Go support depends on the official Go extension and gopls.
 
+See [the language support matrix](docs/language-support.md) for support levels, recommended language-service dependencies, fallback strategies, and planned language expansion.
+
 Hints are rendered at the end of the source line so they do not split expressions in the middle of a statement. The text prefix defaults to `// ` and can be customized with `commentDocLens.hintPrefix`.
 By default, the first useful documentation line is truncated to 120 characters. You can tune this with `commentDocLens.maxHintLength`.
 
