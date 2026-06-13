@@ -118,13 +118,46 @@ export const csharpLanguageAdapter: LanguageAdapter = {
   }
 };
 
+export const phpLanguageAdapter: LanguageAdapter = {
+  languageIds: ['php'],
+  displayName: 'PHP',
+  supportLevel: 'experimental',
+  recommendedExtensions: ['bmewburn.vscode-intelephense-client'],
+  isDeclarationCandidate(candidate, line) {
+    return isPhpDeclarationName(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.php');
+    },
+    findDefinitionLine(document, candidate) {
+      return findPhpDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingBlockCommentLines(document, definitionLine);
+    }
+  }
+};
+
+export const rubyLanguageAdapter: LanguageAdapter = {
+  languageIds: ['ruby'],
+  displayName: 'Ruby',
+  supportLevel: 'hover-only',
+  recommendedExtensions: ['shopify.ruby-lsp'],
+  documentationQuality: {
+    minimumWords: 2
+  }
+};
+
 export const defaultLanguageAdapters = [
   goLanguageAdapter,
   typescriptFamilyLanguageAdapter,
   pythonLanguageAdapter,
   javaLanguageAdapter,
   rustLanguageAdapter,
-  csharpLanguageAdapter
+  csharpLanguageAdapter,
+  phpLanguageAdapter,
+  rubyLanguageAdapter
 ] as const satisfies readonly LanguageAdapter[];
 
 export function createLanguageRegistry(adapters: readonly LanguageAdapter[]): LanguageRegistry {
@@ -488,4 +521,35 @@ function collectLeadingRustDocCommentLines(document: { lineAt(line: number): { t
   }
 
   return collected;
+}
+
+function isPhpDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  if (/\b(?:class|enum|interface|trait)\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  return /\bfunction\s+$/.test(beforeCandidate);
+}
+
+function findPhpDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  const definitionPatterns = [
+    new RegExp(`\\b(?:class|enum|interface|trait)\\s+${wordPattern}\\b`),
+    new RegExp(`\\bfunction\\s+${wordPattern}\\s*\\(`),
+    new RegExp(`\\$${wordPattern}\\s*=`)
+  ];
+
+  for (let line = 0; line < document.lineCount; line++) {
+    if (line === referenceLine) {
+      continue;
+    }
+
+    const text = document.lineAt(line).text;
+    if (definitionPatterns.some((pattern) => pattern.test(text))) {
+      return line;
+    }
+  }
+
+  return undefined;
 }

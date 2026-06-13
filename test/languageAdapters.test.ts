@@ -5,7 +5,9 @@ import {
   csharpLanguageAdapter,
   goLanguageAdapter,
   javaLanguageAdapter,
+  phpLanguageAdapter,
   pythonLanguageAdapter,
+  rubyLanguageAdapter,
   rustLanguageAdapter,
   typescriptFamilyLanguageAdapter
 } from '../src/languages/languageRegistry';
@@ -133,6 +135,45 @@ test('csharp adapter is hover-only and does not enable source fallback yet', () 
   assert.equal(csharpLanguageAdapter.supportLevel, 'hover-only');
   assert.deepEqual(csharpLanguageAdapter.languageIds, ['csharp']);
   assert.equal(csharpLanguageAdapter.sourceComment, undefined);
+});
+
+test('php adapter owns declaration filtering and docblock fallback behavior', () => {
+  assert.equal(phpLanguageAdapter.supportLevel, 'experimental');
+  assert.deepEqual(phpLanguageAdapter.recommendedExtensions, ['bmewburn.vscode-intelephense-client']);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('formatStatus', 9), 'function formatStatus(string $status): string {'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 6), 'class OrderPresenter {'), true);
+  assert.equal(phpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.php', line: 0, character: 0 }), true);
+  assert.equal(phpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rb', line: 0, character: 0 }), false);
+
+  const document = lines([
+    '<?php',
+    '/**',
+    ' * Formats an order status.',
+    ' * Used by list views.',
+    ' */',
+    'function formatStatus(string $status): string {',
+    '    return $status;',
+    '}'
+  ]);
+
+  assert.equal(phpLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('formatStatus', 20, 7), {
+    uri: 'file:///order.php',
+    line: 7,
+    character: 0
+  }), 5);
+  assert.deepEqual(phpLanguageAdapter.sourceComment?.collectLeadingComments(document, 5), [
+    '/**',
+    '* Formats an order status.',
+    '* Used by list views.',
+    '*/'
+  ]);
+});
+
+test('ruby adapter is hover-only and exposes Ruby LSP metadata', () => {
+  assert.equal(rubyLanguageAdapter.supportLevel, 'hover-only');
+  assert.deepEqual(rubyLanguageAdapter.languageIds, ['ruby']);
+  assert.deepEqual(rubyLanguageAdapter.recommendedExtensions, ['shopify.ruby-lsp']);
+  assert.equal(rubyLanguageAdapter.sourceComment, undefined);
 });
 
 function candidate(word: string, startCharacter: number, line = 0): SymbolCandidate {

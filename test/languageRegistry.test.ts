@@ -18,6 +18,8 @@ test('default registry maps current language ids to stable adapters', () => {
   assert.equal(registry.getAdapter('java')?.displayName, 'Java');
   assert.equal(registry.getAdapter('rust')?.displayName, 'Rust');
   assert.equal(registry.getAdapter('csharp')?.displayName, 'C#');
+  assert.equal(registry.getAdapter('php')?.displayName, 'PHP');
+  assert.equal(registry.getAdapter('ruby')?.displayName, 'Ruby');
 
   assert.deepEqual(
     registry.getAdapters().map((adapter) => [adapter.displayName, adapter.supportLevel]),
@@ -27,7 +29,9 @@ test('default registry maps current language ids to stable adapters', () => {
       ['Python', 'experimental'],
       ['Java', 'experimental'],
       ['Rust', 'experimental'],
-      ['C#', 'hover-only']
+      ['C#', 'hover-only'],
+      ['PHP', 'experimental'],
+      ['Ruby', 'hover-only']
     ]
   );
 });
@@ -43,6 +47,12 @@ test('default adapters expose recommended extension metadata for health checks',
   assert.deepEqual(registry.getAdapter('csharp')?.recommendedExtensions, [
     'ms-dotnettools.csdevkit'
   ]);
+  assert.deepEqual(registry.getAdapter('php')?.recommendedExtensions, [
+    'bmewburn.vscode-intelephense-client'
+  ]);
+  assert.deepEqual(registry.getAdapter('ruby')?.recommendedExtensions, [
+    'shopify.ruby-lsp'
+  ]);
 });
 
 test('default language ids are stable and ordered for activation and configuration', () => {
@@ -55,14 +65,19 @@ test('default language ids are stable and ordered for activation and configurati
     'python',
     'java',
     'rust',
-    'csharp'
+    'csharp',
+    'php',
+    'ruby'
   ]);
 });
 
 test('registry filters enabled language ids through existing configuration semantics', () => {
   const registry = createLanguageRegistry(defaultLanguageAdapters);
 
-  assert.deepEqual(registry.getEnabledLanguageIds(['javascript', 'go', 'python', 'java', 'rust', 'csharp', 'unknown']), ['javascript', 'go', 'python', 'java', 'rust', 'csharp']);
+  assert.deepEqual(
+    registry.getEnabledLanguageIds(['javascript', 'go', 'python', 'java', 'rust', 'csharp', 'php', 'ruby', 'unknown']),
+    ['javascript', 'go', 'python', 'java', 'rust', 'csharp', 'php', 'ruby']
+  );
   assert.deepEqual(registry.getEnabledLanguageIds([]), []);
 });
 

@@ -24,7 +24,9 @@
     "inlay hints",
     "go",
     "java",
+    "php",
     "python",
+    "ruby",
     "rust",
     "typescript",
     "javascript",
@@ -48,6 +50,8 @@
     "onLanguage:java",
     "onLanguage:rust",
     "onLanguage:csharp",
+    "onLanguage:php",
+    "onLanguage:ruby",
     "onCommand:commentDocLens.toggle",
     "onCommand:commentDocLens.refresh",
     "onCommand:commentDocLens.showLanguageStatus"
@@ -90,7 +94,9 @@
             "python",
             "java",
             "rust",
-            "csharp"
+            "csharp",
+            "php",
+            "ruby"
           ],
           "description": "Language identifiers where Comment Doc Lens runs."
         },

@@ -24,6 +24,8 @@
 | Java | `java` | `experimental` | Extension Pack for Java 或等价 language server | hover、definition hover、Javadoc | 读取定义前 `/** ... */` Javadoc | Java adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 Javadoc 读取；fixture 已存在 |
 | Rust | `rust` | `experimental` | rust-analyzer | hover、definition hover、`///`、`//!` 文档注释 | 读取定义前连续 `///` 或 `//!` 文档注释 | Rust adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 doc comment 读取；fixture 已存在 |
 | C# | `csharp` | `hover-only` | C# Dev Kit 或 OmniSharp | hover、definition hover、XML docs | 暂不启用 source fallback；依赖语言服务 hover 输出 | C# adapter 单元测试覆盖 hover-only 元数据；fixture 已存在 |
+| PHP | `php` | `experimental` | Intelephense | hover、definition hover、PHPDoc | 读取定义前 `/** ... */` PHPDoc | PHP adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 PHPDoc 读取 |
+| Ruby | `ruby` | `hover-only` | Ruby LSP | hover、definition hover、YARD/RDoc | 暂不启用 source fallback；依赖语言服务 hover 输出 | Ruby adapter 单元测试覆盖 hover-only 元数据 |
 
 ## 语言服务健康检查
 
@@ -37,6 +39,8 @@
 | Java | `vscjava.vscode-java-pack` | extension、hover、definition、source fallback | Java language server 就绪且 Javadoc 可解析时为 `ready` |
 | Rust | `rust-lang.rust-analyzer` | extension、hover、definition、source fallback | rust-analyzer 就绪且 doc comment 可解析时为 `ready` |
 | C# | `ms-dotnettools.csdevkit` | extension、hover、definition | C# Dev Kit 返回 XML docs hover 时为 `ready`；无 source fallback 时 definition 缺失会降级 |
+| PHP | `bmewburn.vscode-intelephense-client` | extension、hover、definition、source fallback | Intelephense 就绪且 PHPDoc 可解析时为 `ready` |
+| Ruby | `shopify.ruby-lsp` | extension、hover、definition | Ruby LSP 返回 YARD/RDoc hover 时为 `ready`；无 source fallback 时 definition 缺失会降级 |
 
 ## 文档质量与噪音过滤
 
@@ -45,7 +49,7 @@ Comment Doc Lens 现在在 formatter、resolver 和 hint builder 三层执行文
 - formatter 会跳过 signature-only code block，并可按最小词数过滤低价值摘要；
 - resolver 会合并全局 `commentDocLens.minimumDocumentationWords` 与 adapter 的 `documentationQuality.minimumWords`，采用更严格的值；
 - hint builder 会在最终展示前再次过滤 resolver 返回的短摘要，避免自定义 resolver 或 hover-only 语言绕过质量预算；
-- C# adapter 默认使用 `minimumWords: 2`，用于减少 bare type name、signature-like hover 等低信号提示。
+- C# 和 Ruby adapter 默认使用 `minimumWords: 2`，用于减少 bare type name、signature-like hover 等低信号提示。
 
 新增语言时，如果 hover 输出常出现类型名、签名或单词摘要，应在 adapter 上声明 `documentationQuality.minimumWords`，并用单元测试覆盖该语言的噪音样例。
 
@@ -58,8 +62,6 @@ Comment Doc Lens 现在在 formatter、resolver 和 hint builder 三层执行文
 
 | 语言 | 预期等级 | 初步策略 | 接入前需要确认 |
 | --- | --- | --- | --- |
-| PHP | `hover-only` 或 `experimental` | 依赖 PHP language server 的 hover/Javadoc-style docblock | 主流 PHP 扩展的 hover 输出质量 |
-| Ruby | `hover-only` 或 `experimental` | 依赖 Solargraph 或 Ruby LSP hover | YARD 注释输出是否稳定 |
 | Kotlin | `hover-only` 或 `experimental` | 依赖 Kotlin language server hover/KDoc | VS Code Kotlin language server 成熟度 |
 | Swift | `hover-only` 或 `experimental` | 依赖 SourceKit-LSP hover/doc comment | macOS/SourceKit-LSP 环境要求 |
 | C/C++ | `hover-only` 或 `experimental` | 依赖 C/C++ 扩展 hover/Doxygen-style comments | 多扩展生态下的 provider 差异 |
