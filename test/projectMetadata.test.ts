@@ -64,6 +64,7 @@ test('extension contributions use commentDocLens identifiers', () => {
     'commentDocLens.enabled',
     'commentDocLens.languages',
     'commentDocLens.languageOverrides',
+    'commentDocLens.maxLineLength',
     'commentDocLens.maxHintLength',
     'commentDocLens.maxHintsPerRequest',
     'commentDocLens.minIdentifierLength',

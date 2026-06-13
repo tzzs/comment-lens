@@ -103,6 +103,12 @@
           },
           "description": "Per-language Comment Doc Lens settings keyed by VS Code language identifier. For example: { \"python\": { \"enabled\": false } }."
         },
+        "commentDocLens.maxLineLength": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 80,
+          "description": "Maximum source line length scanned for candidate symbols. Longer lines are skipped to avoid expensive lookups in generated or minified files."
+        },
         "commentDocLens.maxHintLength": {
           "type": "number",
           "default": 120,

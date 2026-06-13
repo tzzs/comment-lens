@@ -7,6 +7,7 @@ export interface CommentDocLensConfig {
   enabled: boolean;
   languages: readonly string[];
   languageOverrides?: Readonly<Record<string, { enabled?: boolean }>>;
+  maxLineLength?: number;
   maxHintsPerRequest: number;
   minIdentifierLength: number;
   preferPropertyTail: boolean;
@@ -62,7 +63,8 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
     input.lines,
     input.range,
     input.languageId,
-    getCandidateScanLimit(input.config.maxHintsPerRequest)
+    getCandidateScanLimit(input.config.maxHintsPerRequest),
+    input.config.maxLineLength
   );
   const candidatesToResolve = dedupeCandidates(
     candidates.filter((candidate) => shouldResolveCandidate(candidate, input, languageAdapter))

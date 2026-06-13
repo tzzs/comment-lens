@@ -125,6 +125,35 @@ test('returns no hints when a per-language override disables the language', asyn
   );
 });
 
+test('does not resolve candidates on lines beyond the configured length budget', async () => {
+  const resolver: CommentHintResolver = {
+    resolve: async () => {
+      throw new Error('resolver should not be called');
+    }
+  };
+
+  const hints = await buildCommentHints({
+    lines: [`${'x'.repeat(60)} usefulSymbol`],
+    range: { startLine: 0, endLineInclusive: 0 },
+    languageId: 'typescript',
+    documentUri: 'file:///order.ts',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescript'],
+      maxLineLength: 40,
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.deepEqual(hints, []);
+});
+
 test('prefers the tail of property chains when configured', async () => {
   const resolvedWords: string[] = [];
   const resolver: CommentHintResolver = {

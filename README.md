@@ -22,6 +22,7 @@ The extension filters declaration names, JSX tag names, and intermediate propert
 Relevant settings:
 
 - `commentDocLens.maxHintsPerRequest`
+- `commentDocLens.maxLineLength`
 - `commentDocLens.maxHintLength`
 - `commentDocLens.languageOverrides`
 - `commentDocLens.minIdentifierLength`
