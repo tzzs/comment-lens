@@ -6,6 +6,7 @@ import { createLanguageRegistry, defaultLanguageAdapters } from './languages/lan
 export interface CommentDocLensConfig {
   enabled: boolean;
   languages: readonly string[];
+  languageOverrides?: Readonly<Record<string, { enabled?: boolean }>>;
   maxHintsPerRequest: number;
   minIdentifierLength: number;
   preferPropertyTail: boolean;
@@ -48,7 +49,7 @@ const MIN_EXTRA_SCAN_CANDIDATES = 10;
 const DEFAULT_LANGUAGE_REGISTRY = createLanguageRegistry(defaultLanguageAdapters);
 
 export async function buildCommentHints(input: BuildCommentHintsInput): Promise<CommentHint[]> {
-  if (!input.config.enabled || !input.config.languages.includes(input.languageId)) {
+  if (!input.config.enabled || !isLanguageEnabled(input.config, input.languageId)) {
     return [];
   }
 
@@ -97,6 +98,14 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
   }
 
   return hints;
+}
+
+function isLanguageEnabled(config: CommentDocLensConfig, languageId: string): boolean {
+  if (!config.languages.includes(languageId)) {
+    return false;
+  }
+
+  return config.languageOverrides?.[languageId]?.enabled !== false;
 }
 
 function getLineEndCharacter(lines: readonly string[], lineNumber: number): number {

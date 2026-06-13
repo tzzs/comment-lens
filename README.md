@@ -23,6 +23,7 @@ Relevant settings:
 
 - `commentDocLens.maxHintsPerRequest`
 - `commentDocLens.maxHintLength`
+- `commentDocLens.languageOverrides`
 - `commentDocLens.minIdentifierLength`
 - `commentDocLens.preferPropertyTail`
 - `commentDocLens.dedupeLineHints`

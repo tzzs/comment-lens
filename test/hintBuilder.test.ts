@@ -93,6 +93,38 @@ test('returns no hints when disabled or language is not enabled', async () => {
   );
 });
 
+test('returns no hints when a per-language override disables the language', async () => {
+  const resolver: CommentHintResolver = {
+    resolve: async () => {
+      throw new Error('resolver should not be called');
+    }
+  };
+
+  assert.deepEqual(
+    await buildCommentHints({
+      lines: ['const status = OrderStatusPaid;'],
+      range: { startLine: 0, endLineInclusive: 0 },
+      languageId: 'typescript',
+      documentUri: 'file:///order.ts',
+      documentVersion: 1,
+      config: {
+        enabled: true,
+        languages: ['typescript'],
+        languageOverrides: {
+          typescript: { enabled: false }
+        },
+        maxHintsPerRequest: 20,
+        minIdentifierLength: 2,
+        preferPropertyTail: true,
+        dedupeLineHints: true,
+        resolveTimeoutMs: 750
+      },
+      resolver
+    }),
+    []
+  );
+});
+
 test('prefers the tail of property chains when configured', async () => {
   const resolvedWords: string[] = [];
   const resolver: CommentHintResolver = {

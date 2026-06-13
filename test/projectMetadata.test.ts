@@ -63,6 +63,7 @@ test('extension contributions use commentDocLens identifiers', () => {
   assert.deepEqual(Object.keys(packageJson.contributes.configuration.properties), [
     'commentDocLens.enabled',
     'commentDocLens.languages',
+    'commentDocLens.languageOverrides',
     'commentDocLens.maxHintLength',
     'commentDocLens.maxHintsPerRequest',
     'commentDocLens.minIdentifierLength',

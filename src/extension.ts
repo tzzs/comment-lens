@@ -222,6 +222,7 @@ function readCommentDocLensConfig(): CommentDocLensConfig {
   return {
     enabled: config.get<boolean>('enabled', true),
     languages: config.get<string[]>('languages', getDefaultLanguageIds()),
+    languageOverrides: config.get<Record<string, { enabled?: boolean }>>('languageOverrides', {}),
     maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80),
     minIdentifierLength: config.get<number>('minIdentifierLength', 2),
     preferPropertyTail: config.get<boolean>('preferPropertyTail', true),
