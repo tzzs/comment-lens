@@ -1,5 +1,5 @@
 import type { SymbolCandidate } from './candidateScanner';
-import { formatDocumentation, type FormattedDocumentation } from './documentationFormatter';
+import { formatDocumentation, type DocumentationFormatOptions, type FormattedDocumentation } from './documentationFormatter';
 import type { LanguageAdapter, SourceCommentStrategy } from './languages/languageAdapter';
 
 export interface LocationLike {
@@ -30,6 +30,7 @@ export interface DocumentationLookup {
 export interface DocumentationResolverOptions {
   maxHintLength: number;
   maxCacheEntries?: number;
+  minimumDocumentationWords?: number;
 }
 
 export class DocumentationResolver {
@@ -65,7 +66,8 @@ export class DocumentationResolver {
 
     const fromReference = formatDocumentation(
       await this.lookup.getHoverMarkdownLines(candidate, documentUri),
-      this.options.maxHintLength
+      this.options.maxHintLength,
+      this.getFormatOptions(languageAdapter)
     );
     if (fromReference) {
       const location = await this.lookup.getDefinitionLocation(candidate, documentUri, languageAdapter);
@@ -85,7 +87,8 @@ export class DocumentationResolver {
 
     const fromDefinition = formatDocumentation(
       await this.lookup.getHoverMarkdownLinesAtLocation(location),
-      this.options.maxHintLength
+      this.options.maxHintLength,
+      this.getFormatOptions(languageAdapter)
     );
     const fromSource = fromDefinition ?? await this.getSourceDocumentation(location, candidate, languageAdapter);
     const result = fromSource ? { ...fromSource, location } : undefined;
@@ -105,8 +108,18 @@ export class DocumentationResolver {
 
     return formatDocumentation(
       await this.lookup.getDefinitionSourceLines?.(location, candidate, sourceComment) ?? [],
-      this.options.maxHintLength
+      this.options.maxHintLength,
+      this.getFormatOptions(languageAdapter)
     );
+  }
+
+  private getFormatOptions(languageAdapter?: LanguageAdapter): DocumentationFormatOptions {
+    return {
+      minimumWords: Math.max(
+        this.options.minimumDocumentationWords ?? 1,
+        languageAdapter?.documentationQuality?.minimumWords ?? 1
+      )
+    };
   }
 
   private setCache(cacheKey: string, result: ResolvedDocumentation | undefined): void {

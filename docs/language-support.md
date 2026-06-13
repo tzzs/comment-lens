@@ -38,6 +38,17 @@
 | Rust | `rust-lang.rust-analyzer` | extension、hover、definition、source fallback | rust-analyzer 就绪且 doc comment 可解析时为 `ready` |
 | C# | `ms-dotnettools.csdevkit` | extension、hover、definition | C# Dev Kit 返回 XML docs hover 时为 `ready`；无 source fallback 时 definition 缺失会降级 |
 
+## 文档质量与噪音过滤
+
+Comment Doc Lens 现在在 formatter、resolver 和 hint builder 三层执行文档质量控制：
+
+- formatter 会跳过 signature-only code block，并可按最小词数过滤低价值摘要；
+- resolver 会合并全局 `commentDocLens.minimumDocumentationWords` 与 adapter 的 `documentationQuality.minimumWords`，采用更严格的值；
+- hint builder 会在最终展示前再次过滤 resolver 返回的短摘要，避免自定义 resolver 或 hover-only 语言绕过质量预算；
+- C# adapter 默认使用 `minimumWords: 2`，用于减少 bare type name、signature-like hover 等低信号提示。
+
+新增语言时，如果 hover 输出常出现类型名、签名或单词摘要，应在 adapter 上声明 `documentationQuality.minimumWords`，并用单元测试覆盖该语言的噪音样例。
+
 ## 第一批扩展语言
 
 | 语言 | VS Code language id | 初始等级 | 推荐依赖 | 注释/文档来源目标 | Fallback 目标 | 验证目标 |

@@ -1,4 +1,5 @@
 import { scanCandidateSymbols, type LineRange, type SymbolCandidate } from './candidateScanner';
+import { hasMinimumWordCount } from './documentationFormatter';
 import type { LocationLike, ResolvedDocumentation } from './documentationResolver';
 import type { LanguageAdapter } from './languages/languageAdapter';
 import { createLanguageRegistry, defaultLanguageAdapters } from './languages/languageRegistry';
@@ -10,6 +11,7 @@ export interface CommentDocLensConfig {
   maxLineLength?: number;
   maxHintsPerRequest: number;
   minIdentifierLength: number;
+  minimumDocumentationWords?: number;
   preferPropertyTail: boolean;
   dedupeLineHints: boolean;
   resolveTimeoutMs: number;
@@ -83,6 +85,10 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
 
     const { candidate, documentation } = resolved;
     if (candidate.word.length < input.config.minIdentifierLength && !documentation.location) {
+      continue;
+    }
+
+    if (!hasMinimumWordCount(documentation.summary, input.config.minimumDocumentationWords ?? 1)) {
       continue;
     }
 

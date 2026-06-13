@@ -132,6 +132,12 @@
           "minimum": 1,
           "description": "Minimum identifier length before hints are shown unless documentation includes a definition location."
         },
+        "commentDocLens.minimumDocumentationWords": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "description": "Minimum number of words required in a documentation summary before it can be shown."
+        },
         "commentDocLens.preferPropertyTail": {
           "type": "boolean",
           "default": true,

@@ -18,11 +18,16 @@ export interface SourceCommentStrategy {
   collectLeadingComments(document: SourceDocument, definitionLine: number): string[];
 }
 
+export interface DocumentationQualityRules {
+  minimumWords?: number;
+}
+
 export interface LanguageAdapter {
   languageIds: readonly string[];
   displayName: string;
   supportLevel: LanguageSupportLevel;
   recommendedExtensions?: readonly string[];
+  documentationQuality?: DocumentationQualityRules;
   isDeclarationCandidate?(candidate: SymbolCandidate, line: string, languageId?: string): boolean;
   isNoisyCandidate?(candidate: SymbolCandidate, line: string, languageId?: string): boolean;
   sourceComment?: SourceCommentStrategy;

@@ -290,6 +290,7 @@ function readCommentDocLensConfig(): CommentDocLensConfig {
     maxLineLength: config.get<number>('maxLineLength', 2000),
     maxHintsPerRequest: config.get<number>('maxHintsPerRequest', 80),
     minIdentifierLength: config.get<number>('minIdentifierLength', 2),
+    minimumDocumentationWords: config.get<number>('minimumDocumentationWords', 1),
     preferPropertyTail: config.get<boolean>('preferPropertyTail', true),
     dedupeLineHints: config.get<boolean>('dedupeLineHints', true),
     resolveTimeoutMs: config.get<number>('resolveTimeoutMs', 750),
@@ -301,7 +302,8 @@ function readResolverOptions(): DocumentationResolverOptions {
   const config = vscode.workspace.getConfiguration('commentDocLens');
   return {
     maxHintLength: config.get<number>('maxHintLength', 120),
-    maxCacheEntries: config.get<number>('maxCacheEntries', 1000)
+    maxCacheEntries: config.get<number>('maxCacheEntries', 1000),
+    minimumDocumentationWords: config.get<number>('minimumDocumentationWords', 1)
   };
 }
 

@@ -25,11 +25,14 @@ The check is cached per language, file, and cursor position, and the cache is cl
 
 The extension filters declaration names, JSX tag names, and intermediate property-chain segments by default. It also deduplicates repeated line summaries, limits concurrent documentation lookups, times out slow lookups, and bounds resolver cache growth.
 
+Use `commentDocLens.minimumDocumentationWords` to suppress very short hover summaries such as bare type names. The default is `1` to preserve existing behavior, while adapters can opt into stricter rules for languages whose hover output is often signature-like or low signal.
+
 Relevant settings:
 
 - `commentDocLens.maxHintsPerRequest`
 - `commentDocLens.maxLineLength`
 - `commentDocLens.maxHintLength`
+- `commentDocLens.minimumDocumentationWords`
 - `commentDocLens.languageOverrides`
 - `commentDocLens.minIdentifierLength`
 - `commentDocLens.preferPropertyTail`

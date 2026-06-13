@@ -112,7 +112,10 @@ export const csharpLanguageAdapter: LanguageAdapter = {
   languageIds: ['csharp'],
   displayName: 'C#',
   supportLevel: 'hover-only',
-  recommendedExtensions: ['ms-dotnettools.csdevkit']
+  recommendedExtensions: ['ms-dotnettools.csdevkit'],
+  documentationQuality: {
+    minimumWords: 2
+  }
 };
 
 export const defaultLanguageAdapters = [
