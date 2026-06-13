@@ -5,6 +5,7 @@ import {
   goLanguageAdapter,
   javaLanguageAdapter,
   pythonLanguageAdapter,
+  rustLanguageAdapter,
   typescriptFamilyLanguageAdapter
 } from '../src/languages/languageRegistry';
 
@@ -90,6 +91,40 @@ test('java adapter owns declaration filtering and javadoc fallback behavior', ()
   ]);
   assert.deepEqual(javaLanguageAdapter.sourceComment?.collectLeadingComments(document, 5), [
     '/** Format the order status. */'
+  ]);
+});
+
+test('rust adapter owns declaration filtering and doc comment fallback behavior', () => {
+  assert.equal(rustLanguageAdapter.supportLevel, 'experimental');
+  assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('format_status', 7), 'pub fn format_status(status: &str) -> String {'), true);
+  assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 11), 'pub struct OrderPresenter;'), true);
+  assert.equal(rustLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rs', line: 0, character: 0 }), true);
+  assert.equal(rustLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.java', line: 0, character: 0 }), false);
+
+  const document = lines([
+    '/// Formats the order status.',
+    '/// Used by list views.',
+    'pub fn format_status(status: &str) -> String {',
+    '    status.to_string()',
+    '}',
+    '',
+    'pub enum OrderStatus {',
+    '    /// Paid order status.',
+    '    Paid,',
+    '}'
+  ]);
+
+  assert.equal(rustLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('Paid', 4, 9), {
+    uri: 'file:///order.rs',
+    line: 9,
+    character: 0
+  }), 8);
+  assert.deepEqual(rustLanguageAdapter.sourceComment?.collectLeadingComments(document, 2), [
+    '/// Formats the order status.',
+    '/// Used by list views.'
+  ]);
+  assert.deepEqual(rustLanguageAdapter.sourceComment?.collectLeadingComments(document, 8), [
+    '/// Paid order status.'
   ]);
 });
 

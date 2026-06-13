@@ -24,6 +24,7 @@
     "go",
     "java",
     "python",
+    "rust",
     "typescript",
     "javascript",
     "jsdoc",
@@ -44,6 +45,7 @@
     "onLanguage:javascriptreact",
     "onLanguage:python",
     "onLanguage:java",
+    "onLanguage:rust",
     "onCommand:commentDocLens.toggle",
     "onCommand:commentDocLens.refresh"
   ],
@@ -79,7 +81,8 @@
             "typescriptreact",
             "javascriptreact",
             "python",
-            "java"
+            "java",
+            "rust"
           ],
           "description": "Language identifiers where Comment Doc Lens runs."
         },

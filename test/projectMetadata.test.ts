@@ -50,7 +50,8 @@ test('extension contributions use commentDocLens identifiers', () => {
     'onLanguage:typescriptreact',
     'onLanguage:javascriptreact',
     'onLanguage:python',
-    'onLanguage:java'
+    'onLanguage:java',
+    'onLanguage:rust'
   ]);
 
   assert.deepEqual(
@@ -77,6 +78,7 @@ test('extension contributions use commentDocLens identifiers', () => {
     'typescriptreact',
     'javascriptreact',
     'python',
-    'java'
+    'java',
+    'rust'
   ]);
 });
