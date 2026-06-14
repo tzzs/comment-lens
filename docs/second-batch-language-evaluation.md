@@ -19,13 +19,15 @@
 PHP 的 docblock 形式和 Java/JSDoc 接近，source fallback 的实现风险较低。当前已优先支持：
 
 - class/function 前的 `/** ... */`；
-- `function name(...)`、`class Name`、`enum Name`、`interface Name`、`trait Name` 的本地 definition fallback。
+- method/property 前的 PHPDoc；
+- `function name(...)`、`class Name`、`enum Name`、`interface Name`、`trait Name`、`const NAME`、typed property 的本地 definition fallback；
+- `$variable` 左值过滤。
 
 后续升级目标：
 
-- method/property 前的 PHPDoc；
-- `$variable` 左值过滤；
-- `const NAME` 的本地 definition fallback。
+- 更复杂的 namespace/use 场景；
+- inherited PHPDoc 和 magic method 行为；
+- integration fixture 在安装 Intelephense 的环境中验证 hover 输出。
 
 验证门槛：
 
@@ -86,6 +88,8 @@ C/C++ 的语言服务生态和 Doxygen 注释风格差异较大，definition pro
 - 升级到 `experimental` 前，需要 Doxygen `///` 和 `/** ... */` fallback 测试。
 
 ## 后续执行顺序
+
+当前下一步执行目标是 PHP adapter 补强：method、property 和 `const NAME` fallback。Ruby、Kotlin、Swift、C/C++ 继续保持 hover-only，直到真实语言服务输出质量完成验证。
 
 1. PHP：补 method/property/const fallback，并增加 integration fixture。
 2. Ruby：观察 Ruby LSP/Solargraph 输出，稳定后评估 YARD fallback。

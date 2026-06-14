@@ -109,7 +109,7 @@
             "c",
             "cpp"
           ],
-          "description": "Language identifiers where Comment Doc Lens runs."
+          "description": "Registered adapter language identifiers where Comment Doc Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored."
         },
         "commentDocLens.languageOverrides": {
           "type": "object",
@@ -181,6 +181,11 @@
           "type": "string",
           "default": "// ",
           "description": "Prefix displayed before each inline documentation summary."
+        },
+        "commentDocLens.enableHintInteractions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable inlay hint label tooltips and definition locations when documentation lookup provides them."
         }
       }
     }
