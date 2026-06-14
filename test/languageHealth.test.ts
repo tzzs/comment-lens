@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   evaluateLanguageHealth,
+  formatLanguageHealthStatus,
   LanguageHealthService,
   type LanguageHealthProbe
 } from '../src/languageHealth';
@@ -119,6 +120,61 @@ test('caches health checks for the same language position', async () => {
 
   assert.equal(first, second);
   assert.equal(hoverProbeCount, 1);
+});
+
+test('formats missing dependency status with install guidance', () => {
+  const message = formatLanguageHealthStatus({
+    languageId: 'python',
+    adapterDisplayName: 'Python',
+    supportLevel: 'experimental',
+    state: 'missingDependency',
+    reason: 'Missing recommended extensions: ms-python.python, ms-python.vscode-pylance.',
+    recommendedExtensions: ['ms-python.python', 'ms-python.vscode-pylance'],
+    checkedCapabilities: {
+      hover: false,
+      definition: false,
+      sourceFallback: true
+    }
+  });
+
+  assert.match(message, /missingDependency/);
+  assert.match(message, /ms-python.python/);
+  assert.match(message, /ms-python.vscode-pylance/);
+  assert.match(message, /Install or enable/i);
+});
+
+test('formats degraded and unknown status with recovery guidance', () => {
+  const degraded = formatLanguageHealthStatus({
+    languageId: 'go',
+    adapterDisplayName: 'Go',
+    supportLevel: 'stable',
+    state: 'degraded',
+    reason: 'Hover provider returned no usable documentation.',
+    recommendedExtensions: ['golang.Go'],
+    checkedCapabilities: {
+      hover: false,
+      definition: true,
+      sourceFallback: true
+    }
+  });
+  const unknown = formatLanguageHealthStatus({
+    languageId: 'go',
+    adapterDisplayName: 'Go',
+    supportLevel: 'stable',
+    state: 'unknown',
+    reason: 'Language health check timed out.',
+    recommendedExtensions: ['golang.Go'],
+    checkedCapabilities: {
+      hover: false,
+      definition: false,
+      sourceFallback: true
+    }
+  });
+
+  assert.match(degraded, /documented symbol/i);
+  assert.match(degraded, /indexing/i);
+  assert.match(unknown, /Try again/i);
+  assert.match(unknown, /indexing/i);
 });
 
 function probe(options: {

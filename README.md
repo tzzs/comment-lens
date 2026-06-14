@@ -27,6 +27,8 @@ Run `Comment Doc Lens: Show Language Status` from the command palette to inspect
 
 The check is cached per language, file, and cursor position, and the cache is cleared when you refresh, toggle, or change Comment Doc Lens settings. A `missingDependency` status means at least one recommended extension is not installed. A `degraded` status means the language service is present but hover or definition output is not currently useful enough for inline documentation.
 
+For `missingDependency`, install or enable the listed recommended extension. For `degraded`, put the cursor on a documented symbol and ensure the project has finished indexing.
+
 ## Noise and performance controls
 
 The extension filters declaration names, JSX tag names, and intermediate property-chain segments by default. It also deduplicates repeated line summaries, limits concurrent documentation lookups, times out slow lookups, and bounds resolver cache growth.

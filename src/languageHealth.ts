@@ -90,12 +90,21 @@ export async function evaluateLanguageHealth(input: EvaluateLanguageHealthInput)
 export function formatLanguageHealthStatus(status: LanguageHealthStatus): string {
   const recommendedExtensions =
     status.recommendedExtensions.length > 0 ? status.recommendedExtensions.join(', ') : 'built-in language service';
+  const guidance =
+    status.state === 'missingDependency'
+      ? `Install or enable: ${recommendedExtensions}.`
+      : status.state === 'degraded'
+        ? 'Move the cursor onto a documented symbol, refresh language services, or check project indexing.'
+        : status.state === 'unknown'
+          ? 'Try again after the language service finishes indexing.'
+          : 'Ready for inline documentation.';
   return [
     `${status.adapterDisplayName} (${status.languageId}) is ${status.state}.`,
     status.reason,
     `Support: ${status.supportLevel}.`,
     `Extensions: ${recommendedExtensions}.`,
-    `Checks: hover=${status.checkedCapabilities.hover}, definition=${status.checkedCapabilities.definition}, sourceFallback=${status.checkedCapabilities.sourceFallback}.`
+    `Checks: hover=${status.checkedCapabilities.hover}, definition=${status.checkedCapabilities.definition}, sourceFallback=${status.checkedCapabilities.sourceFallback}.`,
+    guidance
   ].join(' ');
 }
 

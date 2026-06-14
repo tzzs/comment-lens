@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       });
 
-      await vscode.window.showInformationMessage(`Comment Doc Lens: ${formatLanguageHealthStatus(status)}`);
+      await vscode.window.showInformationMessage(`Comment Doc Lens Language Status: ${formatLanguageHealthStatus(status)}`);
     })
   );
 
