@@ -145,30 +145,59 @@ test('php adapter owns declaration filtering and docblock fallback behavior', ()
   assert.deepEqual(phpLanguageAdapter.recommendedExtensions, ['bmewburn.vscode-intelephense-client']);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('formatStatus', 9), 'function formatStatus(string $status): string {'), true);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 6), 'class OrderPresenter {'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('PAID_STATUS', 6), 'const PAID_STATUS = "paid";'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('TAX_RATE', 13), 'public const TAX_RATE = 0.1;'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('statusLabel', 16), 'private string $statusLabel;'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('cachedTotal', 23), 'protected static ?int $cachedTotal = null;'), true);
+  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('localStatus', 1), '$localStatus = PAID_STATUS;'), true);
   assert.equal(phpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.php', line: 0, character: 0 }), true);
   assert.equal(phpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rb', line: 0, character: 0 }), false);
 
   const document = lines([
     '<?php',
+    '/** Paid order status. */',
+    'const PAID_STATUS = "paid";',
+    '',
+    'class OrderPresenter {',
+    '    /** Label shown for paid orders. */',
+    '    private string $statusLabel = "Paid";',
+    '',
     '/**',
     ' * Formats an order status.',
     ' * Used by list views.',
     ' */',
-    'function formatStatus(string $status): string {',
-    '    return $status;',
-    '}'
+    '    public function formatStatus(string $status): string {',
+    '        return $status;',
+    '    }',
+    '}',
   ]);
 
-  assert.equal(phpLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('formatStatus', 20, 7), {
+  assert.equal(phpLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('formatStatus', 20, 13), {
     uri: 'file:///order.php',
-    line: 7,
+    line: 13,
     character: 0
-  }), 5);
-  assert.deepEqual(phpLanguageAdapter.sourceComment?.collectLeadingComments(document, 5), [
+  }), 12);
+  assert.equal(phpLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('PAID_STATUS', 20, 13), {
+    uri: 'file:///order.php',
+    line: 13,
+    character: 0
+  }), 2);
+  assert.equal(phpLanguageAdapter.sourceComment?.findDefinitionLine?.(document, candidate('statusLabel', 20, 13), {
+    uri: 'file:///order.php',
+    line: 13,
+    character: 0
+  }), 6);
+  assert.deepEqual(phpLanguageAdapter.sourceComment?.collectLeadingComments(document, 12), [
     '/**',
     '* Formats an order status.',
     '* Used by list views.',
     '*/'
+  ]);
+  assert.deepEqual(phpLanguageAdapter.sourceComment?.collectLeadingComments(document, 2), [
+    '/** Paid order status. */'
+  ]);
+  assert.deepEqual(phpLanguageAdapter.sourceComment?.collectLeadingComments(document, 6), [
+    '/** Label shown for paid orders. */'
   ]);
 });
 

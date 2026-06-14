@@ -19,13 +19,15 @@
 PHP 的 docblock 形式和 Java/JSDoc 接近，source fallback 的实现风险较低。当前已优先支持：
 
 - class/function 前的 `/** ... */`；
-- `function name(...)`、`class Name`、`enum Name`、`interface Name`、`trait Name` 的本地 definition fallback。
+- method/property 前的 PHPDoc；
+- `function name(...)`、`class Name`、`enum Name`、`interface Name`、`trait Name`、`const NAME`、typed property 的本地 definition fallback；
+- `$variable` 左值过滤。
 
 后续升级目标：
 
-- method/property 前的 PHPDoc；
-- `$variable` 左值过滤；
-- `const NAME` 的本地 definition fallback。
+- 更复杂的 namespace/use 场景；
+- inherited PHPDoc 和 magic method 行为；
+- integration fixture 在安装 Intelephense 的环境中验证 hover 输出。
 
 验证门槛：
 

@@ -562,7 +562,38 @@ function isPhpDeclarationName(candidate: { startCharacter: number; endCharacter:
     return true;
   }
 
-  return /\bfunction\s+$/.test(beforeCandidate);
+  if (/\bfunction\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  if (/\b(?:public\s+|protected\s+|private\s+)?const\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  if (isPhpPropertyDeclaration(candidate, line)) {
+    return true;
+  }
+
+  return isPhpVariableAssignmentName(candidate, line);
+}
+
+function isPhpPropertyDeclaration(candidate: { startCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  if (!beforeCandidate.endsWith('$')) {
+    return false;
+  }
+
+  const beforeDollar = beforeCandidate.slice(0, -1).trimEnd();
+  return /^(?:public|protected|private)\s+(?:(?:static|readonly)\s+)*(?:\??[\w\\]+(?:\[\])?)?$/.test(beforeDollar);
+}
+
+function isPhpVariableAssignmentName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  if (line[candidate.startCharacter - 1] !== '$') {
+    return false;
+  }
+
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  return afterCandidate.startsWith('=') && !afterCandidate.startsWith('==');
 }
 
 function findPhpDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
@@ -570,6 +601,8 @@ function findPhpDefinitionLine(document: { lineAt(line: number): { text: string 
   const definitionPatterns = [
     new RegExp(`\\b(?:class|enum|interface|trait)\\s+${wordPattern}\\b`),
     new RegExp(`\\bfunction\\s+${wordPattern}\\s*\\(`),
+    new RegExp(`^\\s*(?:(?:public|protected|private)\\s+)?const\\s+${wordPattern}\\b`),
+    new RegExp(`^\\s*(?:public|protected|private)\\s+(?:(?:static|readonly)\\s+)*(?:\\??[\\w\\\\]+(?:\\[\\])?\\s+)?\\$${wordPattern}\\b`),
     new RegExp(`\\$${wordPattern}\\s*=`)
   ];
 

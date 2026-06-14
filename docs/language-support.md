@@ -24,7 +24,7 @@
 | Java | `java` | `experimental` | Extension Pack for Java 或等价 language server | hover、definition hover、Javadoc | 读取定义前 `/** ... */` Javadoc | Java adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 Javadoc 读取；fixture 已存在 |
 | Rust | `rust` | `experimental` | rust-analyzer | hover、definition hover、`///`、`//!` 文档注释 | 读取定义前连续 `///` 或 `//!` 文档注释 | Rust adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 doc comment 读取；fixture 已存在 |
 | C# | `csharp` | `hover-only` | C# Dev Kit 或 OmniSharp | hover、definition hover、XML docs | 暂不启用 source fallback；依赖语言服务 hover 输出 | C# adapter 单元测试覆盖 hover-only 元数据；fixture 已存在 |
-| PHP | `php` | `experimental` | Intelephense | hover、definition hover、PHPDoc | 读取定义前 `/** ... */` PHPDoc | PHP adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 PHPDoc 读取 |
+| PHP | `php` | `experimental` | Intelephense | hover、definition hover、PHPDoc | 读取定义前 `/** ... */` PHPDoc | PHP adapter 单元测试覆盖 class、function、method、property、const declaration 过滤、本地 definition fallback 和 PHPDoc 读取；手动 fixture 已存在 |
 | Ruby | `ruby` | `hover-only` | Ruby LSP | hover、definition hover、YARD/RDoc | 暂不启用 source fallback；依赖语言服务 hover 输出 | Ruby adapter 单元测试覆盖 hover-only 元数据 |
 | Kotlin | `kotlin` | `hover-only` | Kotlin | hover、definition hover、KDoc | 暂不启用 source fallback；依赖 Kotlin language server hover 输出 | Kotlin adapter 单元测试覆盖 hover-only 元数据和推荐扩展诊断 |
 | Swift | `swift` | `hover-only` | Swift | hover、definition hover、doc comment | 暂不启用 source fallback；依赖 SourceKit-LSP 和本机 Swift 工具链 | Swift adapter 单元测试覆盖 hover-only 元数据和推荐扩展诊断 |
