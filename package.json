@@ -109,7 +109,7 @@
             "c",
             "cpp"
           ],
-          "description": "Language identifiers where Comment Doc Lens runs."
+          "description": "Registered adapter language identifiers where Comment Doc Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored."
         },
         "commentDocLens.languageOverrides": {
           "type": "object",

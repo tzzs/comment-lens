@@ -100,3 +100,15 @@ test('extension contributions use commentDocLens identifiers', () => {
     'cpp'
   ]);
 });
+
+test('language configuration describes registered adapter semantics', () => {
+  const packageJson = readPackageJson();
+  const setting = packageJson.contributes.configuration.properties[
+    'commentDocLens.languages'
+  ] as {
+    description: string;
+  };
+
+  assert.match(setting.description, /registered adapter language identifiers/i);
+  assert.match(setting.description, /filters/i);
+});

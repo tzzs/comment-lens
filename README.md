@@ -2,7 +2,13 @@
 
 Comment Doc Lens displays definition comments and symbol documentation inline at reference sites as VS Code inlay hints.
 
-The first version targets Go, TypeScript, JavaScript, TSX, and JSX by reusing the language services already available in VS Code. Python, Java, Rust, and PHP support are experimental, while C#, Ruby, Kotlin, Swift, and C/C++ start as hover-only support. These languages should use their recommended language extensions for best hover and definition results. Go projects should install the official Go extension with gopls enabled for best results.
+Comment Doc Lens supports a stable core for Go, TypeScript, JavaScript, TSX, and JSX. Python, Java, Rust, and PHP are experimental adapter-backed languages with source-comment fallback where available. C#, Ruby, Kotlin, Swift, and C/C++ are hover-only languages that depend on their language service's hover and definition quality.
+
+Install the recommended language extensions for non-built-in languages. Go works best with the official Go extension and `gopls`; Python works best with Python plus Pylance; Rust works best with rust-analyzer.
+
+## What it is not
+
+Comment Doc Lens does not generate comments, rewrite source files, highlight TODO tags, or index comment anchors. It keeps source unchanged and projects existing symbol documentation from definitions to references.
 
 ## What it shows
 
@@ -43,4 +49,4 @@ Relevant settings:
 
 ## Known limits
 
-Comment Doc Lens only runs for `file` documents in the configured first-version languages. Coverage and wording depend on each language service's hover and definition providers. When hover has no usable documentation, the extension also tries to read leading source comments near the definition, which improves Go behavior when gopls returns signature-only hover content. Timeout handling prevents stale hints from being displayed, but VS Code command calls that are already in flight cannot be forcibly cancelled by this extension.
+Comment Doc Lens only runs for `file` documents in registered adapter languages enabled by configuration. Coverage and wording depend on each language service's hover and definition providers. When hover has no usable documentation, adapters with source fallback can read leading source comments near the definition, which improves languages such as Go when the language service returns signature-only hover content. Timeout handling prevents stale hints from being displayed, but VS Code command calls that are already in flight cannot be forcibly cancelled by this extension.

@@ -87,6 +87,8 @@ C/C++ 的语言服务生态和 Doxygen 注释风格差异较大，definition pro
 
 ## 后续执行顺序
 
+当前下一步执行目标是 PHP adapter 补强：method、property 和 `const NAME` fallback。Ruby、Kotlin、Swift、C/C++ 继续保持 hover-only，直到真实语言服务输出质量完成验证。
+
 1. PHP：补 method/property/const fallback，并增加 integration fixture。
 2. Ruby：观察 Ruby LSP/Solargraph 输出，稳定后评估 YARD fallback。
 3. Kotlin：基于 Gradle/Maven fixture 评估 KDoc fallback。
