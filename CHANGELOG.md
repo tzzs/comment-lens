@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/tzzs/comment-lens/compare/comment-lens-v0.4.1...comment-lens-v0.4.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* use unique marketplace display name ([#19](https://github.com/tzzs/comment-lens/issues/19)) ([38ba4e6](https://github.com/tzzs/comment-lens/commit/38ba4e6c94d76b8c7b4111ec5f1ea89d6436f523))
+
 ## [0.4.1](https://github.com/tzzs/comment-lens/compare/comment-lens-v0.4.0...comment-lens-v0.4.1) (2026-06-15)
 
 
