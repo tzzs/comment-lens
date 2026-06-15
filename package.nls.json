@@ -1,0 +1,23 @@
+{
+  "commentLens.commands.toggle.title": "Comment Lens: Toggle",
+  "commentLens.commands.refresh.title": "Comment Lens: Refresh",
+  "commentLens.commands.showLanguageStatus.title": "Comment Lens: Show Language Status",
+  "commentLens.commands.diagnoseWorkspace.title": "Comment Lens: Diagnose Workspace",
+  "commentLens.commands.copyDiagnosticsForIssue.title": "Comment Lens: Copy Diagnostics for Issue",
+  "commentLens.commands.explainHiddenHint.title": "Comment Lens: Explain Hidden Hint",
+  "commentLens.configuration.enabled.description": "Enable Comment Lens inlay hints.",
+  "commentLens.configuration.languages.description": "Registered adapter language identifiers where Comment Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored.",
+  "commentLens.configuration.languageOverrides.description": "Per-language Comment Lens settings keyed by VS Code language identifier. For example: { \"python\": { \"enabled\": false } }.",
+  "commentLens.configuration.languageOverrides.enabled.description": "Enable or disable Comment Lens for this language.",
+  "commentLens.configuration.maxLineLength.description": "Maximum source line length scanned for candidate symbols. Longer lines are skipped to avoid expensive lookups in generated or minified files.",
+  "commentLens.configuration.maxHintLength.description": "Maximum length of the inline comment summary.",
+  "commentLens.configuration.maxHintsPerRequest.description": "Maximum number of hints produced per inlay hint request.",
+  "commentLens.configuration.minIdentifierLength.description": "Minimum identifier length before hints are shown unless documentation includes a definition location.",
+  "commentLens.configuration.minimumDocumentationWords.description": "Minimum number of words required in a documentation summary before it can be shown.",
+  "commentLens.configuration.preferPropertyTail.description": "Prefer the final identifier in property chains, such as baz in foo.bar.baz.",
+  "commentLens.configuration.dedupeLineHints.description": "Deduplicate repeated inlay hint summaries on the same line.",
+  "commentLens.configuration.resolveTimeoutMs.description": "Maximum time in milliseconds to wait for a single documentation lookup.",
+  "commentLens.configuration.maxCacheEntries.description": "Maximum number of cached documentation lookup results.",
+  "commentLens.configuration.hintPrefix.description": "Prefix displayed before each inline documentation summary.",
+  "commentLens.configuration.enableHintInteractions.description": "Enable inlay hint label tooltips and definition locations when documentation lookup provides them. Details are resolved lazily when VS Code asks for them."
+}

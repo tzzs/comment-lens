@@ -1,5 +1,12 @@
 import * as vscode from 'vscode';
-import type { SymbolCandidate } from './candidateScanner';
+import { scanCandidateSymbols, type SymbolCandidate } from './candidateScanner';
+import {
+  createDiagnosticsReport,
+  createHiddenHintExplanation,
+  summarizeWorkspaceDiagnosis,
+  type DiagnosticEvent,
+  type WorkspaceLanguageDiagnosis
+} from './diagnostics';
 import {
   DocumentationResolver,
   type DocumentationLookup,
@@ -22,20 +29,24 @@ import {
 } from './languages/languageRegistry';
 
 export function activate(context: vscode.ExtensionContext): void {
+  const outputChannel = vscode.window.createOutputChannel('Comment Lens');
+  const diagnostics = new CommentLensDiagnostics(outputChannel);
   const lookup = new VscodeDocumentationLookup();
   const resolver = new DocumentationResolver(lookup, readResolverOptions());
   const languageRegistry = createLanguageRegistry(defaultLanguageAdapters);
-  const hintProvider = new CommentDocLensInlayHintProvider(resolver, languageRegistry);
+  const hintProvider = new CommentDocLensInlayHintProvider(resolver, languageRegistry, diagnostics);
   const languageHealth = new LanguageHealthService(new VscodeLanguageHealthProbe());
 
   const selector = languageRegistry.getLanguageIds().map((language) => ({ language, scheme: 'file' }));
   context.subscriptions.push(vscode.languages.registerInlayHintsProvider(selector, hintProvider));
+  context.subscriptions.push(outputChannel);
 
   context.subscriptions.push(
     vscode.commands.registerCommand('commentLens.refresh', () => {
       resolver.clearCache();
       languageHealth.clearCache();
       hintProvider.refresh();
+      diagnostics.record('info', 'Refreshed hints and cleared caches.');
     })
   );
 
@@ -47,6 +58,7 @@ export function activate(context: vscode.ExtensionContext): void {
       resolver.clearCache();
       languageHealth.clearCache();
       hintProvider.refresh();
+      diagnostics.record('info', `Toggled Comment Lens ${enabled ? 'off' : 'on'}.`);
     })
   );
 
@@ -61,6 +73,9 @@ export function activate(context: vscode.ExtensionContext): void {
       const languageAdapter = languageRegistry.getAdapter(editor.document.languageId);
       if (!languageAdapter) {
         await vscode.window.showInformationMessage(`Comment Lens: ${editor.document.languageId} is not supported.`);
+        diagnostics.record('warn', 'Language status requested for unsupported language.', {
+          languageId: editor.document.languageId
+        });
         return;
       }
 
@@ -74,7 +89,81 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       });
 
-      await vscode.window.showInformationMessage(`Comment Lens Language Status: ${formatLanguageHealthStatus(status)}`);
+      const message = formatLanguageHealthStatus(status);
+      diagnostics.record('info', 'Language status evaluated.', {
+        languageId: status.languageId,
+        state: status.state,
+        supportLevel: status.supportLevel,
+        checkedCapabilities: status.checkedCapabilities,
+        recommendedExtensions: status.recommendedExtensions
+      });
+      await vscode.window.showInformationMessage(`Comment Lens Language Status: ${message}`);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('commentLens.diagnoseWorkspace', async () => {
+      const diagnoses = await diagnoseWorkspace(languageRegistry, languageHealth, diagnostics);
+      const summary = summarizeWorkspaceDiagnosis(diagnoses);
+      outputChannel.appendLine(summary);
+      outputChannel.show(true);
+      diagnostics.record('info', 'Workspace diagnosis completed.', {
+        fileCount: diagnoses.length,
+        states: countDiagnosisStates(diagnoses)
+      });
+      await vscode.window.showInformationMessage(`Comment Lens: diagnosed ${diagnoses.length} workspace files.`);
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('commentLens.copyDiagnosticsForIssue', async () => {
+      const report = createDiagnosticsReport({
+        extensionVersion: context.extension.packageJSON.version,
+        workspaceName: vscode.workspace.name,
+        activeDocument: vscode.window.activeTextEditor?.document.uri.toString(),
+        activeLanguageId: vscode.window.activeTextEditor?.document.languageId,
+        events: diagnostics.getEvents()
+      });
+      await vscode.env.clipboard.writeText(report);
+      diagnostics.record('info', 'Copied diagnostics report for issue.');
+      await vscode.window.showInformationMessage('Comment Lens: diagnostics copied to clipboard.');
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('commentLens.explainHiddenHint', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        await vscode.window.showInformationMessage('Comment Lens: open a file to explain hidden hints.');
+        return;
+      }
+
+      const config = readCommentDocLensConfig();
+      const line = editor.selection.active.line;
+      const text = editor.document.lineAt(line).text;
+      const candidateCount = scanCandidateSymbols(
+        [text],
+        { startLine: 0, endLineInclusive: 0 },
+        editor.document.languageId,
+        config.maxHintsPerRequest,
+        config.maxLineLength
+      ).length;
+      const explanation = createHiddenHintExplanation({
+        enabled: config.enabled,
+        languageId: editor.document.languageId,
+        configuredLanguages: config.languages,
+        languageOverrideEnabled: config.languageOverrides?.[editor.document.languageId]?.enabled,
+        candidateCount,
+        lineTooLong: text.length > (config.maxLineLength ?? Number.POSITIVE_INFINITY)
+      });
+      diagnostics.record('info', 'Explained hidden hint state.', {
+        languageId: editor.document.languageId,
+        candidateCount,
+        explanation
+      });
+      outputChannel.appendLine(explanation);
+      outputChannel.show(true);
+      await vscode.window.showInformationMessage(`Comment Lens: ${explanation}`);
     })
   );
 
@@ -119,11 +208,13 @@ class VscodeLanguageHealthProbe implements LanguageHealthProbe {
 
 class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
   private readonly emitter = new vscode.EventEmitter<void>();
+  private readonly resolveData = new WeakMap<vscode.InlayHint, InlayHintResolveData>();
   readonly onDidChangeInlayHints = this.emitter.event;
 
   constructor(
     private readonly resolver: DocumentationResolver,
-    private readonly languageRegistry: ReturnType<typeof createLanguageRegistry>
+    private readonly languageRegistry: ReturnType<typeof createLanguageRegistry>,
+    private readonly diagnostics: CommentLensDiagnostics
   ) {}
 
   refresh(): void {
@@ -153,8 +244,15 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       documentVersion: document.version,
       config,
       languageAdapter,
+      includeCandidateData: true,
       isCancellationRequested: () => token.isCancellationRequested,
       resolver: {
+        resolveSummary: async (candidate, documentUri, documentVersion) => {
+          if (token.isCancellationRequested) {
+            return undefined;
+          }
+          return this.resolver.resolveSummary(candidate, documentUri, documentVersion, languageAdapter);
+        },
         resolve: async (candidate, documentUri, documentVersion) => {
           if (token.isCancellationRequested) {
             return undefined;
@@ -170,24 +268,97 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
 
     return hints.map((hint) => {
       const labelPart = new vscode.InlayHintLabelPart(hint.label);
-      if (config.enableHintInteractions) {
-        labelPart.tooltip = hint.tooltip;
-        if (hint.location) {
-          labelPart.location = new vscode.Location(
-            vscode.Uri.parse(hint.location.uri),
-            new vscode.Position(hint.location.line, hint.location.character)
-          );
-        }
-      }
-
       const inlayHint = new vscode.InlayHint(
         new vscode.Position(hint.line, hint.character),
         [labelPart],
         vscode.InlayHintKind.Parameter
       );
       inlayHint.paddingLeft = true;
+      this.resolveData.set(inlayHint, {
+        candidate: hint.candidate,
+        documentUri: document.uri.toString(),
+        documentVersion: document.version,
+        languageId: document.languageId
+      });
       return inlayHint;
     });
+  }
+
+  async resolveInlayHint(inlayHint: vscode.InlayHint, token: vscode.CancellationToken): Promise<vscode.InlayHint> {
+    const config = readCommentDocLensConfig();
+    if (!config.enableHintInteractions || token.isCancellationRequested) {
+      return inlayHint;
+    }
+
+    const data = this.resolveData.get(inlayHint);
+    if (!data?.candidate) {
+      return inlayHint;
+    }
+
+    const languageAdapter = this.languageRegistry.getAdapter(data.languageId);
+    if (!languageAdapter) {
+      return inlayHint;
+    }
+
+    const documentation = await this.resolver.resolve(
+      data.candidate,
+      data.documentUri,
+      data.documentVersion,
+      languageAdapter
+    );
+    if (!documentation || token.isCancellationRequested) {
+      return inlayHint;
+    }
+
+    const labelPart = getFirstLabelPart(inlayHint);
+    labelPart.tooltip = documentation.fullText;
+    if (documentation.location) {
+      labelPart.location = new vscode.Location(
+        vscode.Uri.parse(documentation.location.uri),
+        new vscode.Position(documentation.location.line, documentation.location.character)
+      );
+    }
+    inlayHint.label = [labelPart];
+    this.diagnostics.record('info', 'Resolved inlay hint details lazily.', {
+      languageId: data.languageId,
+      hasLocation: Boolean(documentation.location)
+    });
+    return inlayHint;
+  }
+}
+
+interface InlayHintResolveData {
+  candidate?: SymbolCandidate;
+  documentUri: string;
+  documentVersion: number;
+  languageId: string;
+}
+
+class CommentLensDiagnostics {
+  private readonly events: DiagnosticEvent[] = [];
+
+  constructor(private readonly outputChannel: vscode.OutputChannel) {}
+
+  record(level: DiagnosticEvent['level'], message: string, details?: Readonly<Record<string, unknown>>): void {
+    const event: DiagnosticEvent = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      details
+    };
+    this.events.push(event);
+    if (this.events.length > 100) {
+      this.events.shift();
+    }
+
+    this.outputChannel.appendLine(`[${event.timestamp}] ${level.toUpperCase()} ${message}`);
+    if (details) {
+      this.outputChannel.appendLine(JSON.stringify(details, null, 2));
+    }
+  }
+
+  getEvents(): readonly DiagnosticEvent[] {
+    return this.events;
   }
 }
 
@@ -288,6 +459,80 @@ function collectLines(document: vscode.TextDocument, range: vscode.Range): strin
     lines[line] = document.lineAt(line).text;
   }
   return lines;
+}
+
+async function diagnoseWorkspace(
+  languageRegistry: ReturnType<typeof createLanguageRegistry>,
+  languageHealth: LanguageHealthService,
+  diagnostics: CommentLensDiagnostics
+): Promise<WorkspaceLanguageDiagnosis[]> {
+  const files = await vscode.workspace.findFiles(
+    '**/*.{go,ts,tsx,js,jsx,py,java,rs,php,cs,rb,kt,swift,c,cpp,h,hpp}',
+    '**/{node_modules,.git,out}/**',
+    40
+  );
+  const diagnoses: WorkspaceLanguageDiagnosis[] = [];
+
+  for (const uri of files) {
+    let document: vscode.TextDocument;
+    try {
+      document = await vscode.workspace.openTextDocument(uri);
+    } catch (error) {
+      diagnostics.record('warn', 'Could not open document during workspace diagnosis.', {
+        uri: uri.toString(),
+        error: error instanceof Error ? error.message : String(error)
+      });
+      continue;
+    }
+
+    const adapter = languageRegistry.getAdapter(document.languageId);
+    if (!adapter) {
+      continue;
+    }
+
+    const status = await languageHealth.evaluate({
+      languageId: document.languageId,
+      adapter,
+      documentUri: document.uri.toString(),
+      position: findProbePosition(document)
+    });
+    diagnoses.push({
+      uri: document.uri.toString(),
+      languageId: document.languageId,
+      status
+    });
+  }
+
+  return diagnoses;
+}
+
+function findProbePosition(document: vscode.TextDocument): LanguageHealthPosition {
+  for (let line = 0; line < document.lineCount; line++) {
+    const text = document.lineAt(line).text;
+    const firstWord = text.search(/[A-Za-z_$]/);
+    if (firstWord >= 0) {
+      return { line, character: firstWord };
+    }
+  }
+
+  return { line: 0, character: 0 };
+}
+
+function countDiagnosisStates(diagnoses: readonly WorkspaceLanguageDiagnosis[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const diagnosis of diagnoses) {
+    counts[diagnosis.status.state] = (counts[diagnosis.status.state] ?? 0) + 1;
+  }
+
+  return counts;
+}
+
+function getFirstLabelPart(inlayHint: vscode.InlayHint): vscode.InlayHintLabelPart {
+  if (typeof inlayHint.label === 'string') {
+    return new vscode.InlayHintLabelPart(inlayHint.label);
+  }
+
+  return inlayHint.label[0] ?? new vscode.InlayHintLabelPart('');
 }
 
 function readCommentDocLensConfig(): CommentDocLensConfig {

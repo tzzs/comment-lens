@@ -41,6 +41,8 @@
     "assets/social-preview.png",
     "assets/social-preview.svg",
     "out/src/**/*.js",
+    "package.nls.json",
+    "package.nls.zh-cn.json",
     "README.md",
     "README_CN.md",
     "CHANGELOG.md",
@@ -64,22 +66,37 @@
     "onLanguage:cpp",
     "onCommand:commentLens.toggle",
     "onCommand:commentLens.refresh",
-    "onCommand:commentLens.showLanguageStatus"
+    "onCommand:commentLens.showLanguageStatus",
+    "onCommand:commentLens.diagnoseWorkspace",
+    "onCommand:commentLens.copyDiagnosticsForIssue",
+    "onCommand:commentLens.explainHiddenHint"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "commentLens.toggle",
-        "title": "Comment Lens: Toggle"
+        "title": "%commentLens.commands.toggle.title%"
       },
       {
         "command": "commentLens.refresh",
-        "title": "Comment Lens: Refresh"
+        "title": "%commentLens.commands.refresh.title%"
       },
       {
         "command": "commentLens.showLanguageStatus",
-        "title": "Comment Lens: Show Language Status"
+        "title": "%commentLens.commands.showLanguageStatus.title%"
+      },
+      {
+        "command": "commentLens.diagnoseWorkspace",
+        "title": "%commentLens.commands.diagnoseWorkspace.title%"
+      },
+      {
+        "command": "commentLens.copyDiagnosticsForIssue",
+        "title": "%commentLens.commands.copyDiagnosticsForIssue.title%"
+      },
+      {
+        "command": "commentLens.explainHiddenHint",
+        "title": "%commentLens.commands.explainHiddenHint.title%"
       }
     ],
     "configuration": {
@@ -88,7 +105,7 @@
         "commentLens.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable Comment Lens inlay hints."
+          "description": "%commentLens.configuration.enabled.description%"
         },
         "commentLens.languages": {
           "type": "array",
@@ -112,7 +129,7 @@
             "c",
             "cpp"
           ],
-          "description": "Registered adapter language identifiers where Comment Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored."
+          "description": "%commentLens.configuration.languages.description%"
         },
         "commentLens.languageOverrides": {
           "type": "object",
@@ -122,73 +139,73 @@
             "properties": {
               "enabled": {
                 "type": "boolean",
-                "description": "Enable or disable Comment Lens for this language."
+              "description": "%commentLens.configuration.languageOverrides.enabled.description%"
               }
             }
           },
-          "description": "Per-language Comment Lens settings keyed by VS Code language identifier. For example: { \"python\": { \"enabled\": false } }."
+          "description": "%commentLens.configuration.languageOverrides.description%"
         },
         "commentLens.maxLineLength": {
           "type": "number",
           "default": 2000,
           "minimum": 80,
-          "description": "Maximum source line length scanned for candidate symbols. Longer lines are skipped to avoid expensive lookups in generated or minified files."
+          "description": "%commentLens.configuration.maxLineLength.description%"
         },
         "commentLens.maxHintLength": {
           "type": "number",
           "default": 120,
           "minimum": 20,
-          "description": "Maximum length of the inline comment summary."
+          "description": "%commentLens.configuration.maxHintLength.description%"
         },
         "commentLens.maxHintsPerRequest": {
           "type": "number",
           "default": 80,
           "minimum": 1,
-          "description": "Maximum number of hints produced per inlay hint request."
+          "description": "%commentLens.configuration.maxHintsPerRequest.description%"
         },
         "commentLens.minIdentifierLength": {
           "type": "number",
           "default": 2,
           "minimum": 1,
-          "description": "Minimum identifier length before hints are shown unless documentation includes a definition location."
+          "description": "%commentLens.configuration.minIdentifierLength.description%"
         },
         "commentLens.minimumDocumentationWords": {
           "type": "number",
           "default": 1,
           "minimum": 1,
-          "description": "Minimum number of words required in a documentation summary before it can be shown."
+          "description": "%commentLens.configuration.minimumDocumentationWords.description%"
         },
         "commentLens.preferPropertyTail": {
           "type": "boolean",
           "default": true,
-          "description": "Prefer the final identifier in property chains, such as baz in foo.bar.baz."
+          "description": "%commentLens.configuration.preferPropertyTail.description%"
         },
         "commentLens.dedupeLineHints": {
           "type": "boolean",
           "default": true,
-          "description": "Deduplicate repeated inlay hint summaries on the same line."
+          "description": "%commentLens.configuration.dedupeLineHints.description%"
         },
         "commentLens.resolveTimeoutMs": {
           "type": "number",
           "default": 750,
           "minimum": 100,
-          "description": "Maximum time in milliseconds to wait for a single documentation lookup."
+          "description": "%commentLens.configuration.resolveTimeoutMs.description%"
         },
         "commentLens.maxCacheEntries": {
           "type": "number",
           "default": 1000,
           "minimum": 100,
-          "description": "Maximum number of cached documentation lookup results."
+          "description": "%commentLens.configuration.maxCacheEntries.description%"
         },
         "commentLens.hintPrefix": {
           "type": "string",
           "default": "// ",
-          "description": "Prefix displayed before each inline documentation summary."
+          "description": "%commentLens.configuration.hintPrefix.description%"
         },
         "commentLens.enableHintInteractions": {
           "type": "boolean",
           "default": false,
-          "description": "Enable inlay hint label tooltips and definition locations when documentation lookup provides them."
+          "description": "%commentLens.configuration.enableHintInteractions.description%"
         }
       }
     }

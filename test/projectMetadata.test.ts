@@ -24,6 +24,20 @@ function readPackageJson(): PackageJson {
   return JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as PackageJson;
 }
 
+function readJsonFile<T>(path: string): T {
+  return JSON.parse(readFileSync(join(process.cwd(), path), 'utf8')) as T;
+}
+
+function resolvePackageNls(value: string): string {
+  const match = /^%(.+)%$/.exec(value);
+  if (!match) {
+    return value;
+  }
+
+  const english = readJsonFile<Record<string, string>>('package.nls.json');
+  return english[match[1]] ?? value;
+}
+
 test('project metadata uses Comment Lens naming', () => {
   const packageJson = readPackageJson();
 
@@ -39,12 +53,15 @@ test('project metadata uses Comment Lens naming', () => {
 test('extension contributions use commentLens identifiers', () => {
   const packageJson = readPackageJson();
 
-  assert.deepEqual(packageJson.activationEvents.slice(-3), [
+  assert.deepEqual(packageJson.activationEvents.slice(-6), [
     'onCommand:commentLens.toggle',
     'onCommand:commentLens.refresh',
-    'onCommand:commentLens.showLanguageStatus'
+    'onCommand:commentLens.showLanguageStatus',
+    'onCommand:commentLens.diagnoseWorkspace',
+    'onCommand:commentLens.copyDiagnosticsForIssue',
+    'onCommand:commentLens.explainHiddenHint'
   ]);
-  assert.deepEqual(packageJson.activationEvents.slice(0, -3), [
+  assert.deepEqual(packageJson.activationEvents.slice(0, -6), [
     'onLanguage:go',
     'onLanguage:typescript',
     'onLanguage:javascript',
@@ -64,11 +81,25 @@ test('extension contributions use commentLens identifiers', () => {
 
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.command),
-    ['commentLens.toggle', 'commentLens.refresh', 'commentLens.showLanguageStatus']
+    [
+      'commentLens.toggle',
+      'commentLens.refresh',
+      'commentLens.showLanguageStatus',
+      'commentLens.diagnoseWorkspace',
+      'commentLens.copyDiagnosticsForIssue',
+      'commentLens.explainHiddenHint'
+    ]
   );
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.title),
-    ['Comment Lens: Toggle', 'Comment Lens: Refresh', 'Comment Lens: Show Language Status']
+    [
+      '%commentLens.commands.toggle.title%',
+      '%commentLens.commands.refresh.title%',
+      '%commentLens.commands.showLanguageStatus.title%',
+      '%commentLens.commands.diagnoseWorkspace.title%',
+      '%commentLens.commands.copyDiagnosticsForIssue.title%',
+      '%commentLens.commands.explainHiddenHint.title%'
+    ]
   );
   assert.equal(packageJson.contributes.configuration.title, 'Comment Lens');
   assert.deepEqual(Object.keys(packageJson.contributes.configuration.properties), [
@@ -106,6 +137,29 @@ test('extension contributions use commentLens identifiers', () => {
   ]);
 });
 
+test('package localization includes English defaults and Simplified Chinese translations', () => {
+  const english = readJsonFile<Record<string, string>>('package.nls.json');
+  const chinese = readJsonFile<Record<string, string>>('package.nls.zh-cn.json');
+  const requiredKeys = [
+    'commentLens.commands.toggle.title',
+    'commentLens.commands.refresh.title',
+    'commentLens.commands.showLanguageStatus.title',
+    'commentLens.commands.diagnoseWorkspace.title',
+    'commentLens.commands.copyDiagnosticsForIssue.title',
+    'commentLens.commands.explainHiddenHint.title',
+    'commentLens.configuration.enabled.description',
+    'commentLens.configuration.enableHintInteractions.description'
+  ];
+
+  for (const key of requiredKeys) {
+    assert.equal(typeof english[key], 'string', key);
+    assert.equal(typeof chinese[key], 'string', key);
+  }
+
+  assert.match(chinese['commentLens.commands.diagnoseWorkspace.title'], /诊断/);
+  assert.match(chinese['commentLens.configuration.enabled.description'], /启用/);
+});
+
 test('language configuration describes registered adapter semantics', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
@@ -114,8 +168,10 @@ test('language configuration describes registered adapter semantics', () => {
     description: string;
   };
 
-  assert.match(setting.description, /registered adapter language identifiers/i);
-  assert.match(setting.description, /filters/i);
+  const description = resolvePackageNls(setting.description);
+
+  assert.match(description, /registered adapter language identifiers/i);
+  assert.match(description, /filters/i);
 });
 
 test('hint interactions are opt-in', () => {
@@ -130,6 +186,8 @@ test('hint interactions are opt-in', () => {
 
   assert.equal(setting.type, 'boolean');
   assert.equal(setting.default, false);
-  assert.match(setting.description, /tooltip/i);
-  assert.match(setting.description, /definition/i);
+  const description = resolvePackageNls(setting.description);
+
+  assert.match(description, /tooltip/i);
+  assert.match(description, /definition/i);
 });
