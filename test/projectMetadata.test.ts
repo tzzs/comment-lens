@@ -181,6 +181,22 @@ test('sample gallery and positioning article are packaged', () => {
   assert.match(article, /does not call an LLM/i);
 });
 
+test('maintenance docs define cadence, metrics, and release checks', () => {
+  const optimizationPlan = readFileSync(join(process.cwd(), 'docs/2026-06-16-comment-lens-optimization-plan.md'), 'utf8');
+  const maintenance = readFileSync(join(process.cwd(), 'docs/maintenance-metrics.md'), 'utf8');
+  const releaseChecklist = readFileSync(join(process.cwd(), 'docs/release-quality-checklist.md'), 'utf8');
+
+  assert.match(optimizationPlan, /P5：维护机制与指标/);
+  assert.match(maintenance, /monthly quality release/i);
+  assert.match(maintenance, /quarterly language upgrade/i);
+  assert.match(maintenance, /Acquisition Trend/);
+  assert.match(maintenance, /Copy Diagnostics for Issue/);
+  assert.match(releaseChecklist, /npm test/);
+  assert.match(releaseChecklist, /npm run package/);
+  assert.match(releaseChecklist, /Open VSX downloads/);
+  assert.match(releaseChecklist, /Marketplace Acquisition Trend/);
+});
+
 test('language configuration describes registered adapter semantics', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
