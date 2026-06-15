@@ -43,6 +43,7 @@
     "out/src/**/*.js",
     "package.nls.json",
     "package.nls.zh-cn.json",
+    "docs/**/*.md",
     "README.md",
     "README_CN.md",
     "CHANGELOG.md",
@@ -69,7 +70,8 @@
     "onCommand:commentLens.showLanguageStatus",
     "onCommand:commentLens.diagnoseWorkspace",
     "onCommand:commentLens.copyDiagnosticsForIssue",
-    "onCommand:commentLens.explainHiddenHint"
+    "onCommand:commentLens.explainHiddenHint",
+    "onCommand:commentLens.openSampleGallery"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
@@ -97,6 +99,10 @@
       {
         "command": "commentLens.explainHiddenHint",
         "title": "%commentLens.commands.explainHiddenHint.title%"
+      },
+      {
+        "command": "commentLens.openSampleGallery",
+        "title": "%commentLens.commands.openSampleGallery.title%"
       }
     ],
     "configuration": {

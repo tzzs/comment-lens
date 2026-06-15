@@ -168,6 +168,17 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
+    vscode.commands.registerCommand('commentLens.openSampleGallery', async () => {
+      const galleryUri = vscode.Uri.joinPath(context.extensionUri, 'docs', 'sample-gallery.md');
+      const document = await vscode.workspace.openTextDocument(galleryUri);
+      await vscode.window.showTextDocument(document, { preview: true });
+      diagnostics.record('info', 'Opened sample gallery.', {
+        uri: galleryUri.toString()
+      });
+    })
+  );
+
+  context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('commentLens')) {
         resolver.updateOptions(readResolverOptions());

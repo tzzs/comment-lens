@@ -112,5 +112,7 @@ Run `npm run test:integration` when the local VS Code/Electron host is available
 ## Links
 
 - [Language support matrix](docs/language-support.md)
+- [Sample gallery](docs/sample-gallery.md)
+- [Inline docs without generating comments](docs/articles/inline-docs-without-generating-comments.md)
 - [Changelog](CHANGELOG.md)
 - [MIT License](LICENSE)

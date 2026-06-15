@@ -5,6 +5,7 @@
   "commentLens.commands.diagnoseWorkspace.title": "Comment Lens: 诊断工作区",
   "commentLens.commands.copyDiagnosticsForIssue.title": "Comment Lens: 复制 Issue 诊断信息",
   "commentLens.commands.explainHiddenHint.title": "Comment Lens: 解释隐藏的提示",
+  "commentLens.commands.openSampleGallery.title": "Comment Lens: 打开示例库",
   "commentLens.configuration.enabled.description": "启用 Comment Lens 行内文档提示。",
   "commentLens.configuration.languages.description": "Comment Lens 运行的已注册 adapter 语言标识符。此设置只过滤已支持的 adapter 语言；未知语言标识符会被忽略。",
   "commentLens.configuration.languageOverrides.description": "按 VS Code 语言标识符配置每种语言的 Comment Lens 设置。例如：{ \"python\": { \"enabled\": false } }。",

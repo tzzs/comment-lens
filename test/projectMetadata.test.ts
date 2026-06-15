@@ -53,15 +53,16 @@ test('project metadata uses Comment Lens naming', () => {
 test('extension contributions use commentLens identifiers', () => {
   const packageJson = readPackageJson();
 
-  assert.deepEqual(packageJson.activationEvents.slice(-6), [
+  assert.deepEqual(packageJson.activationEvents.slice(-7), [
     'onCommand:commentLens.toggle',
     'onCommand:commentLens.refresh',
     'onCommand:commentLens.showLanguageStatus',
     'onCommand:commentLens.diagnoseWorkspace',
     'onCommand:commentLens.copyDiagnosticsForIssue',
-    'onCommand:commentLens.explainHiddenHint'
+    'onCommand:commentLens.explainHiddenHint',
+    'onCommand:commentLens.openSampleGallery'
   ]);
-  assert.deepEqual(packageJson.activationEvents.slice(0, -6), [
+  assert.deepEqual(packageJson.activationEvents.slice(0, -7), [
     'onLanguage:go',
     'onLanguage:typescript',
     'onLanguage:javascript',
@@ -87,7 +88,8 @@ test('extension contributions use commentLens identifiers', () => {
       'commentLens.showLanguageStatus',
       'commentLens.diagnoseWorkspace',
       'commentLens.copyDiagnosticsForIssue',
-      'commentLens.explainHiddenHint'
+      'commentLens.explainHiddenHint',
+      'commentLens.openSampleGallery'
     ]
   );
   assert.deepEqual(
@@ -98,7 +100,8 @@ test('extension contributions use commentLens identifiers', () => {
       '%commentLens.commands.showLanguageStatus.title%',
       '%commentLens.commands.diagnoseWorkspace.title%',
       '%commentLens.commands.copyDiagnosticsForIssue.title%',
-      '%commentLens.commands.explainHiddenHint.title%'
+      '%commentLens.commands.explainHiddenHint.title%',
+      '%commentLens.commands.openSampleGallery.title%'
     ]
   );
   assert.equal(packageJson.contributes.configuration.title, 'Comment Lens');
@@ -147,6 +150,7 @@ test('package localization includes English defaults and Simplified Chinese tran
     'commentLens.commands.diagnoseWorkspace.title',
     'commentLens.commands.copyDiagnosticsForIssue.title',
     'commentLens.commands.explainHiddenHint.title',
+    'commentLens.commands.openSampleGallery.title',
     'commentLens.configuration.enabled.description',
     'commentLens.configuration.enableHintInteractions.description'
   ];
@@ -157,7 +161,24 @@ test('package localization includes English defaults and Simplified Chinese tran
   }
 
   assert.match(chinese['commentLens.commands.diagnoseWorkspace.title'], /诊断/);
+  assert.match(chinese['commentLens.commands.openSampleGallery.title'], /示例/);
   assert.match(chinese['commentLens.configuration.enabled.description'], /启用/);
+});
+
+test('sample gallery and positioning article are packaged', () => {
+  const packageJson = readPackageJson() as PackageJson & { files: string[] };
+
+  assert.equal(packageJson.files.includes('docs/**/*.md'), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/sample-gallery.md')), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md')), true);
+
+  const gallery = readFileSync(join(process.cwd(), 'docs/sample-gallery.md'), 'utf8');
+  const article = readFileSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md'), 'utf8');
+  assert.match(gallery, /Read existing docs where symbols are used/);
+  assert.match(gallery, /Go/);
+  assert.match(gallery, /TypeScript/);
+  assert.match(article, /without generating comments/i);
+  assert.match(article, /does not call an LLM/i);
 });
 
 test('language configuration describes registered adapter semantics', () => {
