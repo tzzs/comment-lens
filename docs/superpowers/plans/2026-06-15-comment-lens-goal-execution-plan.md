@@ -14,7 +14,7 @@
 
 本地代码已更新到远端最新主干：
 
-`d4d6aef chore(main): release comment-doc-lens 0.3.0 (#11)`
+`d4d6aef chore(main): release comment-lens 0.3.0 (#11)`
 
 主分支已经具备：
 
@@ -27,9 +27,9 @@
 - `docs/superpowers/plans/2026-06-14-multilanguage-architecture-design.md`
 - Python、Java、Rust、PHP 为 `experimental`
 - C#、Ruby、Kotlin、Swift、C、C++ 为 `hover-only`
-- 已有 `commentDocLens.languageOverrides`
-- 已有 `commentDocLens.maxLineLength`
-- 已有 `commentDocLens.minimumDocumentationWords`
+- 已有 `commentLens.languageOverrides`
+- 已有 `commentLens.maxLineLength`
+- 已有 `commentLens.minimumDocumentationWords`
 - 已有命令 `Comment Lens: Show Language Status`
 
 ## Goal 模式契约
@@ -39,7 +39,7 @@
 **完成标准：**
 
 - README 不再使用 “first version” 这类过期表述。
-- `commentDocLens.languages` 明确说明它过滤的是已注册 adapter language id。
+- `commentLens.languages` 明确说明它过滤的是已注册 adapter language id。
 - Inlay hint 的 tooltip 和 definition location 交互能力以显式设置开启，默认保持安静展示。
 - PHP experimental adapter 覆盖 `method`、`property`、`const NAME` 等 `docs/second-batch-language-evaluation.md` 中记录的后续目标。
 - 语言状态输出对 missing dependency、degraded、unknown 场景更可操作。
@@ -61,7 +61,7 @@
 - 修改：`docs/second-batch-language-evaluation.md`
   - 标记 PHP adapter 补强为当前下一步执行目标。
 - 修改：`package.json`
-  - 澄清 `commentDocLens.languages` 语义，新增可选 hint 交互设置。
+  - 澄清 `commentLens.languages` 语义，新增可选 hint 交互设置。
 - 修改：`src/extension.ts`
   - 读取新设置；开启时把 tooltip/location 写入 inlay hint label part；优化 language status 文案。
 - 修改：`src/hintBuilder.ts`
@@ -99,7 +99,7 @@
 test('language configuration describes registered adapter semantics', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
-    'commentDocLens.languages'
+    'commentLens.languages'
   ] as {
     description: string;
   };
@@ -121,7 +121,7 @@ npm test -- test/projectMetadata.test.ts
 
 - [ ] **步骤 3：更新 `package.json` 配置描述**
 
-把 `commentDocLens.languages.description` 改为：
+把 `commentLens.languages.description` 改为：
 
 ```json
 "Registered adapter language identifiers where Comment Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored."
@@ -189,7 +189,7 @@ git commit -m "docs(language): align post-0.3.0 support contract"
 在 `test/projectMetadata.test.ts` 的配置 key 列表中加入：
 
 ```ts
-'commentDocLens.enableHintInteractions'
+'commentLens.enableHintInteractions'
 ```
 
 新增测试：
@@ -198,7 +198,7 @@ git commit -m "docs(language): align post-0.3.0 support contract"
 test('hint interactions are opt-in', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
-    'commentDocLens.enableHintInteractions'
+    'commentLens.enableHintInteractions'
   ] as {
     type: string;
     default: boolean;
@@ -220,15 +220,15 @@ test('hint interactions are opt-in', () => {
 npm test -- test/projectMetadata.test.ts
 ```
 
-预期：失败，因为当前还没有 `commentDocLens.enableHintInteractions`。
+预期：失败，因为当前还没有 `commentLens.enableHintInteractions`。
 
 - [ ] **步骤 3：在 `package.json` 中新增设置**
 
-在 `commentDocLens.hintPrefix` 后加入：
+在 `commentLens.hintPrefix` 后加入：
 
 ```json
 ,
-"commentDocLens.enableHintInteractions": {
+"commentLens.enableHintInteractions": {
   "type": "boolean",
   "default": false,
   "description": "Enable inlay hint label tooltips and definition locations when documentation lookup provides them."
@@ -276,10 +276,10 @@ if (config.enableHintInteractions) {
 
 ```ts
 await runTest('inlay hint interactions are opt-in', async () => {
-  const config = vscode.workspace.getConfiguration('commentDocLens');
+  const config = vscode.workspace.getConfiguration('commentLens');
   await config.update('enableHintInteractions', true, vscode.ConfigurationTarget.Global);
   try {
-    await vscode.commands.executeCommand('commentDocLens.refresh');
+    await vscode.commands.executeCommand('commentLens.refresh');
     const hints = await getHintsForFixture('order.ts');
     assert.ok(
       hints.some((hint) => hint.labelTooltipCount > 0 && hint.labelLocationCount > 0),
@@ -287,7 +287,7 @@ await runTest('inlay hint interactions are opt-in', async () => {
     );
   } finally {
     await config.update('enableHintInteractions', undefined, vscode.ConfigurationTarget.Global);
-    await vscode.commands.executeCommand('commentDocLens.refresh');
+    await vscode.commands.executeCommand('commentLens.refresh');
   }
 });
 ```
@@ -636,7 +636,7 @@ git commit -m "chore(release): prepare post-0.3.0 polish handoff"
 
 计划已保存到：
 
-`docs/superpowers/plans/2026-06-15-comment-doc-lens-goal-execution-plan.md`
+`docs/superpowers/plans/2026-06-15-comment-lens-goal-execution-plan.md`
 
 两种执行方式：
 

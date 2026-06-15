@@ -18,8 +18,8 @@ The default TypeScript and JavaScript path is verified for constants, variables,
 
 See [the language support matrix](docs/language-support.md) for support levels, recommended language-service dependencies, fallback strategies, and planned language expansion.
 
-Hints are rendered at the end of the source line so they do not split expressions in the middle of a statement. The text prefix defaults to `// ` and can be customized with `commentDocLens.hintPrefix`.
-By default, the first useful documentation line is truncated to 120 characters. You can tune this with `commentDocLens.maxHintLength`.
+Hints are rendered at the end of the source line so they do not split expressions in the middle of a statement. The text prefix defaults to `// ` and can be customized with `commentLens.hintPrefix`.
+By default, the first useful documentation line is truncated to 120 characters. You can tune this with `commentLens.maxHintLength`.
 
 ## Language service status
 
@@ -33,21 +33,21 @@ For `missingDependency`, install or enable the listed recommended extension. For
 
 The extension filters declaration names, JSX tag names, and intermediate property-chain segments by default. It also deduplicates repeated line summaries, limits concurrent documentation lookups, times out slow lookups, and bounds resolver cache growth.
 
-Use `commentDocLens.minimumDocumentationWords` to suppress very short hover summaries such as bare type names. The default is `1` to preserve existing behavior, while adapters can opt into stricter rules for languages whose hover output is often signature-like or low signal.
+Use `commentLens.minimumDocumentationWords` to suppress very short hover summaries such as bare type names. The default is `1` to preserve existing behavior, while adapters can opt into stricter rules for languages whose hover output is often signature-like or low signal.
 
 Relevant settings:
 
-- `commentDocLens.maxHintsPerRequest`
-- `commentDocLens.maxLineLength`
-- `commentDocLens.maxHintLength`
-- `commentDocLens.minimumDocumentationWords`
-- `commentDocLens.languageOverrides`
-- `commentDocLens.minIdentifierLength`
-- `commentDocLens.preferPropertyTail`
-- `commentDocLens.dedupeLineHints`
-- `commentDocLens.resolveTimeoutMs`
-- `commentDocLens.maxCacheEntries`
-- `commentDocLens.hintPrefix`
+- `commentLens.maxHintsPerRequest`
+- `commentLens.maxLineLength`
+- `commentLens.maxHintLength`
+- `commentLens.minimumDocumentationWords`
+- `commentLens.languageOverrides`
+- `commentLens.minIdentifierLength`
+- `commentLens.preferPropertyTail`
+- `commentLens.dedupeLineHints`
+- `commentLens.resolveTimeoutMs`
+- `commentLens.maxCacheEntries`
+- `commentLens.hintPrefix`
 
 ## Known limits
 

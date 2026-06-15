@@ -27,7 +27,7 @@ function readPackageJson(): PackageJson {
 test('project metadata uses Comment Lens naming', () => {
   const packageJson = readPackageJson();
 
-  assert.equal(packageJson.name, 'comment-doc-lens');
+  assert.equal(packageJson.name, 'comment-lens');
   assert.equal(packageJson.displayName, 'Comment Lens');
   assert.equal(packageJson.publisher, 'tanzz');
   assert.equal(packageJson.description, 'Show definition comments and symbol documentation inline at reference sites.');
@@ -36,13 +36,13 @@ test('project metadata uses Comment Lens naming', () => {
   assert.equal(packageJson.main, './out/src/extension.js');
 });
 
-test('extension contributions use commentDocLens identifiers', () => {
+test('extension contributions use commentLens identifiers', () => {
   const packageJson = readPackageJson();
 
   assert.deepEqual(packageJson.activationEvents.slice(-3), [
-    'onCommand:commentDocLens.toggle',
-    'onCommand:commentDocLens.refresh',
-    'onCommand:commentDocLens.showLanguageStatus'
+    'onCommand:commentLens.toggle',
+    'onCommand:commentLens.refresh',
+    'onCommand:commentLens.showLanguageStatus'
   ]);
   assert.deepEqual(packageJson.activationEvents.slice(0, -3), [
     'onLanguage:go',
@@ -64,7 +64,7 @@ test('extension contributions use commentDocLens identifiers', () => {
 
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.command),
-    ['commentDocLens.toggle', 'commentDocLens.refresh', 'commentDocLens.showLanguageStatus']
+    ['commentLens.toggle', 'commentLens.refresh', 'commentLens.showLanguageStatus']
   );
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.title),
@@ -72,22 +72,22 @@ test('extension contributions use commentDocLens identifiers', () => {
   );
   assert.equal(packageJson.contributes.configuration.title, 'Comment Lens');
   assert.deepEqual(Object.keys(packageJson.contributes.configuration.properties), [
-    'commentDocLens.enabled',
-    'commentDocLens.languages',
-    'commentDocLens.languageOverrides',
-    'commentDocLens.maxLineLength',
-    'commentDocLens.maxHintLength',
-    'commentDocLens.maxHintsPerRequest',
-    'commentDocLens.minIdentifierLength',
-    'commentDocLens.minimumDocumentationWords',
-    'commentDocLens.preferPropertyTail',
-    'commentDocLens.dedupeLineHints',
-    'commentDocLens.resolveTimeoutMs',
-    'commentDocLens.maxCacheEntries',
-    'commentDocLens.hintPrefix',
-    'commentDocLens.enableHintInteractions'
+    'commentLens.enabled',
+    'commentLens.languages',
+    'commentLens.languageOverrides',
+    'commentLens.maxLineLength',
+    'commentLens.maxHintLength',
+    'commentLens.maxHintsPerRequest',
+    'commentLens.minIdentifierLength',
+    'commentLens.minimumDocumentationWords',
+    'commentLens.preferPropertyTail',
+    'commentLens.dedupeLineHints',
+    'commentLens.resolveTimeoutMs',
+    'commentLens.maxCacheEntries',
+    'commentLens.hintPrefix',
+    'commentLens.enableHintInteractions'
   ]);
-  assert.deepEqual(packageJson.contributes.configuration.properties['commentDocLens.languages'].default, [
+  assert.deepEqual(packageJson.contributes.configuration.properties['commentLens.languages'].default, [
     'go',
     'typescript',
     'javascript',
@@ -109,7 +109,7 @@ test('extension contributions use commentDocLens identifiers', () => {
 test('language configuration describes registered adapter semantics', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
-    'commentDocLens.languages'
+    'commentLens.languages'
   ] as {
     description: string;
   };
@@ -121,7 +121,7 @@ test('language configuration describes registered adapter semantics', () => {
 test('hint interactions are opt-in', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
-    'commentDocLens.enableHintInteractions'
+    'commentLens.enableHintInteractions'
   ] as {
     type: string;
     default: boolean;

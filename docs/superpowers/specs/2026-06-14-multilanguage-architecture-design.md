@@ -77,7 +77,7 @@ registry 需要：
 
 - 暴露完整的支持语言 id 列表，用于 activation 和 provider registration；
 - 根据 `languageId` 解析唯一 adapter；
-- 兼容现有 `commentDocLens.languages` 配置；
+- 兼容现有 `commentLens.languages` 配置；
 - 让文档和测试可以读取支持等级与依赖元数据。
 
 初始 registry 应包含：
@@ -160,12 +160,12 @@ registry 需要：
 
 计划中的 UX 优化：
 
-- 保持 `commentDocLens.languages` 向后兼容；
+- 保持 `commentLens.languages` 向后兼容；
 - registry 建立后再增加 per-language 配置；
 - 文档中说明每种语言的依赖和支持等级；
 - 通过 adapter-specific 规则减少噪音 hint；
 - 保持 display-only hint 行为；
-- 保持 `commentDocLens.toggle` 和 `commentDocLens.refresh` 行为稳定；
+- 保持 `commentLens.toggle` 和 `commentLens.refresh` 行为稳定；
 - 在支持等级建立后，优化设置项描述。
 
 ## 错误处理和降级

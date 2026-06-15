@@ -65,7 +65,7 @@
    - 健康检查必须有缓存和超时，不能每次 inlay hint 请求都重复昂贵检测。
 
 3. 新增用户入口。
-   - 新增命令：`commentDocLens.showLanguageStatus`。
+   - 新增命令：`commentLens.showLanguageStatus`。
    - 命令输出当前活动 editor 的语言支持状态、推荐依赖、最近一次 hover/definition/source fallback 结果。
    - 可选：在状态栏显示简短状态，例如 `Comment Lens: Ready` / `Degraded`，但默认应保持克制，避免噪音。
 
@@ -80,7 +80,7 @@
 | 健康模型单元测试 | `npm test` | ready/degraded/missingDependency/unknown 状态可正确生成 |
 | 推荐扩展检测 | mock `vscode.extensions.getExtension` 或抽象接口测试 | 安装/未安装路径均可验证 |
 | command probe 超时 | 单元测试 | 慢 hover/definition 不阻塞 hint pipeline |
-| 命令注册 | metadata 测试 | `commentDocLens.showLanguageStatus` 出现在 `package.json` contributes.commands |
+| 命令注册 | metadata 测试 | `commentLens.showLanguageStatus` 出现在 `package.json` contributes.commands |
 | 文档 | 文档扫描 | README 和支持矩阵说明推荐依赖和降级行为 |
 | 全量验证 | `npm run compile`、`npm test`、`npm run package` | 全部通过 |
 
@@ -101,7 +101,7 @@
 
 3. 改进 formatter 质量规则。
    - 增强 signature-only 检测，覆盖 Java/C#/Rust/Python 常见签名形态。
-   - 增加 `commentDocLens.minimumDocumentationWords` 或 adapter-level 质量阈值。
+   - 增加 `commentLens.minimumDocumentationWords` 或 adapter-level 质量阈值。
    - 增加多行文档摘要策略：首句优先、标题优先、去掉 `@param`/`@return` 噪音。
 
 4. adapter 扩展点。
@@ -144,7 +144,7 @@
 
 4. 支持矩阵更新。
    - 每种新增语言必须同步更新 `docs/language-support.md`。
-   - 如果只进入 planned，不应加入默认 `commentDocLens.languages`。
+   - 如果只进入 planned，不应加入默认 `commentLens.languages`。
 
 ### 验证方式
 
@@ -170,7 +170,7 @@
 ```md
 基于 Comment Lens 当前多语言 adapter 架构，完成下一阶段“语言服务质量路线”优化。
 
-优先级 A：实现语言服务健康检查与用户提示。新增健康模型、健康检查服务和 `commentDocLens.showLanguageStatus` 命令，能够报告当前语言的支持等级、推荐依赖、hover/definition/source fallback 可用性和降级原因。README 与语言支持矩阵必须同步更新。
+优先级 A：实现语言服务健康检查与用户提示。新增健康模型、健康检查服务和 `commentLens.showLanguageStatus` 命令，能够报告当前语言的支持等级、推荐依赖、hover/definition/source fallback 可用性和降级原因。README 与语言支持矩阵必须同步更新。
 
 优先级 B：实现文档质量与噪音过滤增强。引入可选的 document symbols / references 辅助过滤，增加 adapter-level symbol kind 与质量规则，增强 formatter 对 signature-only 和低价值文档的过滤。必须保持现有 display-only inlay hints 产品边界。
 

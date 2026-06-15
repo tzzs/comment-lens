@@ -54,7 +54,7 @@
 Comment Lens 现在在 formatter、resolver 和 hint builder 三层执行文档质量控制：
 
 - formatter 会跳过 signature-only code block，并可按最小词数过滤低价值摘要；
-- resolver 会合并全局 `commentDocLens.minimumDocumentationWords` 与 adapter 的 `documentationQuality.minimumWords`，采用更严格的值；
+- resolver 会合并全局 `commentLens.minimumDocumentationWords` 与 adapter 的 `documentationQuality.minimumWords`，采用更严格的值；
 - hint builder 会在最终展示前再次过滤 resolver 返回的短摘要，避免自定义 resolver 或 hover-only 语言绕过质量预算；
 - C#、Ruby、Kotlin、Swift 和 C/C++ adapter 默认使用 `minimumWords: 2`，用于减少 bare type name、signature-like hover 等低信号提示。
 
