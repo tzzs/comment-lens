@@ -40,6 +40,7 @@ export const typescriptFamilyLanguageAdapter: LanguageAdapter = {
   isDeclarationCandidate(candidate, line) {
     return isDeclarationName(candidate, line)
       || isDeclarationContext(candidate, line)
+      || isFunctionLikeDeclarationName(candidate, line)
       || isFunctionParameterName(candidate, line);
   },
   isNoisyCandidate(candidate, line, languageId) {
@@ -310,6 +311,26 @@ function isDeclarationContext(candidate: { startCharacter: number; endCharacter:
   }
 
   return !/\bcase\s+$/.test(line.slice(0, candidate.startCharacter));
+}
+
+function isFunctionLikeDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const next = nextNonWhitespaceCharacter(line, candidate.endCharacter);
+  if (next !== '(') {
+    return false;
+  }
+
+  const openParen = line.indexOf('(', candidate.endCharacter);
+  if (openParen < 0) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  if (closeParen < 0) {
+    return false;
+  }
+
+  const afterCloseParen = line.slice(closeParen + 1).trimStart();
+  return afterCloseParen.startsWith('{') || afterCloseParen.startsWith(':');
 }
 
 function isFunctionParameterName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
