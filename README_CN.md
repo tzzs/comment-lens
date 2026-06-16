@@ -16,6 +16,12 @@
   <img src="assets/social-preview.png" alt="Comment Doc Lens 在 VS Code 中展示内联符号文档的预览图">
 </p>
 
+## 演示
+
+| 开启前 | 开启后 |
+| --- | --- |
+| <img src="assets/demo-before.png" alt="开启 Comment Doc Lens 前的 VS Code 编辑器"> | <img src="assets/demo-after.png" alt="开启 Comment Doc Lens 后在引用行尾展示内联文档提示"> |
+
 ## 为什么需要它
 
 Comment Doc Lens 把有用的定义文档放回你正在阅读的代码旁边。只要引用到的符号带有文档注释、JSDoc、docstring、Javadoc、PHPDoc，或语言服务能够返回有价值的 hover 文档，扩展就会把第一条有用摘要展示在当前行末尾。
@@ -39,9 +45,9 @@ Comment Doc Lens 会扫描当前可见的标识符，调用 VS Code 当前语言
 
 | 等级 | 语言 | 说明 |
 | --- | --- | --- |
-| 稳定 | Go、TypeScript、JavaScript、TSX、JSX | 核心路径支持，并有自动化 fixture 覆盖。 |
-| 实验 | Python、Java、Rust、PHP | 通过 adapter 接入，并在可行时读取源码注释作为 fallback。 |
-| Hover-only | C#、Ruby、Kotlin、Swift、C、C++ | 依赖对应语言服务的 hover 与 definition 输出质量。 |
+| 稳定 | Go、TypeScript、JavaScript、TSX、JSX、Python、Java、Rust、PHP | 有 adapter 测试、代表性 fixture，并在可行时读取源码注释作为 fallback。 |
+| 实验 | C#、Ruby、Kotlin、Swift、C、C++ | 优先使用语言服务 hover，并为常见 XML docs、YARD/RDoc、KDoc、Swift doc comment 和 Doxygen 注释提供本地 fallback。 |
+| Hover-only | 暂无 | 新语言只有在完全依赖已安装语言服务 hover/definition 输出时才从这里开始。 |
 
 非内置语言建议安装对应的推荐扩展。Go 推荐官方 Go 扩展和 `gopls`；Python 推荐 Python 扩展和 Pylance；Rust 推荐 rust-analyzer。
 
@@ -54,6 +60,10 @@ Comment Doc Lens 会扫描当前可见的标识符，调用 VS Code 当前语言
 | `Comment Doc Lens: Toggle` | 开启或关闭内联文档提示。 |
 | `Comment Doc Lens: Refresh` | 清理缓存并刷新提示。 |
 | `Comment Doc Lens: Show Language Status` | 检查当前文件语言服务是 ready、degraded、missing dependency 还是 unknown。 |
+| `Comment Doc Lens: Diagnose Workspace` | 扫描代表性工作区文件并输出语言服务健康报告。 |
+| `Comment Doc Lens: Copy Diagnostics for Issue` | 复制最近诊断事件，生成可粘贴到 GitHub issue 的 Markdown。 |
+| `Comment Doc Lens: Explain Hidden Hint` | 解释当前行为什么没有显示内联文档提示。 |
+| `Comment Doc Lens: Open Sample Gallery` | 打开代表性的内联文档示例。 |
 
 ## 语言服务状态
 
@@ -113,5 +123,9 @@ npm run package
 
 - [English README](README.md)
 - [语言支持矩阵](docs/language-support.md)
+- [示例库](docs/sample-gallery.md)
+- [不生成注释的行内文档](docs/articles/inline-docs-without-generating-comments.md)
+- [维护指标](docs/maintenance-metrics.md)
+- [发布质量清单](docs/release-quality-checklist.md)
 - [更新日志](CHANGELOG.md)
 - [MIT License](LICENSE)

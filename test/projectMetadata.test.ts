@@ -24,6 +24,20 @@ function readPackageJson(): PackageJson {
   return JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')) as PackageJson;
 }
 
+function readJsonFile<T>(path: string): T {
+  return JSON.parse(readFileSync(join(process.cwd(), path), 'utf8')) as T;
+}
+
+function resolvePackageNls(value: string): string {
+  const match = /^%(.+)%$/.exec(value);
+  if (!match) {
+    return value;
+  }
+
+  const english = readJsonFile<Record<string, string>>('package.nls.json');
+  return english[match[1]] ?? value;
+}
+
 test('project metadata uses Comment Doc Lens naming', () => {
   const packageJson = readPackageJson();
 
@@ -39,12 +53,16 @@ test('project metadata uses Comment Doc Lens naming', () => {
 test('extension contributions use commentDocLens identifiers', () => {
   const packageJson = readPackageJson();
 
-  assert.deepEqual(packageJson.activationEvents.slice(-3), [
+  assert.deepEqual(packageJson.activationEvents.slice(-7), [
     'onCommand:commentDocLens.toggle',
     'onCommand:commentDocLens.refresh',
-    'onCommand:commentDocLens.showLanguageStatus'
+    'onCommand:commentDocLens.showLanguageStatus',
+    'onCommand:commentDocLens.diagnoseWorkspace',
+    'onCommand:commentDocLens.copyDiagnosticsForIssue',
+    'onCommand:commentDocLens.explainHiddenHint',
+    'onCommand:commentDocLens.openSampleGallery'
   ]);
-  assert.deepEqual(packageJson.activationEvents.slice(0, -3), [
+  assert.deepEqual(packageJson.activationEvents.slice(0, -7), [
     'onLanguage:go',
     'onLanguage:typescript',
     'onLanguage:javascript',
@@ -64,11 +82,27 @@ test('extension contributions use commentDocLens identifiers', () => {
 
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.command),
-    ['commentDocLens.toggle', 'commentDocLens.refresh', 'commentDocLens.showLanguageStatus']
+    [
+      'commentDocLens.toggle',
+      'commentDocLens.refresh',
+      'commentDocLens.showLanguageStatus',
+      'commentDocLens.diagnoseWorkspace',
+      'commentDocLens.copyDiagnosticsForIssue',
+      'commentDocLens.explainHiddenHint',
+      'commentDocLens.openSampleGallery'
+    ]
   );
   assert.deepEqual(
     packageJson.contributes.commands.map((command) => command.title),
-    ['Comment Doc Lens: Toggle', 'Comment Doc Lens: Refresh', 'Comment Doc Lens: Show Language Status']
+    [
+      '%commentDocLens.commands.toggle.title%',
+      '%commentDocLens.commands.refresh.title%',
+      '%commentDocLens.commands.showLanguageStatus.title%',
+      '%commentDocLens.commands.diagnoseWorkspace.title%',
+      '%commentDocLens.commands.copyDiagnosticsForIssue.title%',
+      '%commentDocLens.commands.explainHiddenHint.title%',
+      '%commentDocLens.commands.openSampleGallery.title%'
+    ]
   );
   assert.equal(packageJson.contributes.configuration.title, 'Comment Doc Lens');
   assert.deepEqual(Object.keys(packageJson.contributes.configuration.properties), [
@@ -106,6 +140,67 @@ test('extension contributions use commentDocLens identifiers', () => {
   ]);
 });
 
+test('package localization includes English defaults and Simplified Chinese translations', () => {
+  const english = readJsonFile<Record<string, string>>('package.nls.json');
+  const chinese = readJsonFile<Record<string, string>>('package.nls.zh-cn.json');
+  const requiredKeys = [
+    'commentDocLens.commands.toggle.title',
+    'commentDocLens.commands.refresh.title',
+    'commentDocLens.commands.showLanguageStatus.title',
+    'commentDocLens.commands.diagnoseWorkspace.title',
+    'commentDocLens.commands.copyDiagnosticsForIssue.title',
+    'commentDocLens.commands.explainHiddenHint.title',
+    'commentDocLens.commands.openSampleGallery.title',
+    'commentDocLens.configuration.enabled.description',
+    'commentDocLens.configuration.enableHintInteractions.description'
+  ];
+
+  for (const key of requiredKeys) {
+    assert.equal(typeof english[key], 'string', key);
+    assert.equal(typeof chinese[key], 'string', key);
+  }
+
+  assert.match(chinese['commentDocLens.commands.diagnoseWorkspace.title'], /诊断/);
+  assert.match(chinese['commentDocLens.commands.openSampleGallery.title'], /示例/);
+  assert.match(chinese['commentDocLens.configuration.enabled.description'], /启用/);
+});
+
+test('sample gallery, evidence doc, and positioning article are packaged', () => {
+  const packageJson = readPackageJson() as PackageJson & { files: string[] };
+
+  assert.equal(packageJson.files.includes('docs/**/*.md'), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/sample-gallery.md')), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/language-service-evidence.md')), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md')), true);
+
+  const gallery = readFileSync(join(process.cwd(), 'docs/sample-gallery.md'), 'utf8');
+  const evidence = readFileSync(join(process.cwd(), 'docs/language-service-evidence.md'), 'utf8');
+  const article = readFileSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md'), 'utf8');
+  assert.match(gallery, /Read existing docs where symbols are used/);
+  assert.match(gallery, /Go/);
+  assert.match(gallery, /TypeScript/);
+  assert.match(evidence, /test-fixtures\/language-service\/csharp/);
+  assert.match(evidence, /Do not mark a language as `stable` from source fallback alone/);
+  assert.match(article, /without generating comments/i);
+  assert.match(article, /does not call an LLM/i);
+});
+
+test('maintenance docs define cadence, metrics, and release checks', () => {
+  const optimizationPlan = readFileSync(join(process.cwd(), 'docs/2026-06-16-comment-lens-optimization-plan.md'), 'utf8');
+  const maintenance = readFileSync(join(process.cwd(), 'docs/maintenance-metrics.md'), 'utf8');
+  const releaseChecklist = readFileSync(join(process.cwd(), 'docs/release-quality-checklist.md'), 'utf8');
+
+  assert.match(optimizationPlan, /P5：维护机制与指标/);
+  assert.match(maintenance, /monthly quality release/i);
+  assert.match(maintenance, /quarterly language upgrade/i);
+  assert.match(maintenance, /Acquisition Trend/);
+  assert.match(maintenance, /Copy Diagnostics for Issue/);
+  assert.match(releaseChecklist, /npm test/);
+  assert.match(releaseChecklist, /npm run package/);
+  assert.match(releaseChecklist, /Open VSX downloads/);
+  assert.match(releaseChecklist, /Marketplace Acquisition Trend/);
+});
+
 test('language configuration describes registered adapter semantics', () => {
   const packageJson = readPackageJson();
   const setting = packageJson.contributes.configuration.properties[
@@ -114,8 +209,10 @@ test('language configuration describes registered adapter semantics', () => {
     description: string;
   };
 
-  assert.match(setting.description, /registered adapter language identifiers/i);
-  assert.match(setting.description, /filters/i);
+  const description = resolvePackageNls(setting.description);
+
+  assert.match(description, /registered adapter language identifiers/i);
+  assert.match(description, /filters/i);
 });
 
 test('hint interactions are opt-in', () => {
@@ -130,6 +227,8 @@ test('hint interactions are opt-in', () => {
 
   assert.equal(setting.type, 'boolean');
   assert.equal(setting.default, false);
-  assert.match(setting.description, /tooltip/i);
-  assert.match(setting.description, /definition/i);
+  const description = resolvePackageNls(setting.description);
+
+  assert.match(description, /tooltip/i);
+  assert.match(description, /definition/i);
 });
