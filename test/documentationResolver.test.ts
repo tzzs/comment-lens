@@ -43,6 +43,62 @@ test('adds definition location even when reference hover has documentation', asy
   assert.deepEqual(result?.location, { uri: 'file:///status.ts', line: 8, character: 13 });
 });
 
+test('resolves lightweight summaries without definition lookup when reference hover is useful', async () => {
+  let definitionCalls = 0;
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => ['```ts', 'const value: OrderStatus', '```', 'Paid order status.'],
+    getDefinitionLocation: async () => {
+      definitionCalls++;
+      return { uri: 'file:///status.ts', line: 8, character: 13 };
+    },
+    getHoverMarkdownLinesAtLocation: async () => {
+      throw new Error('definition hover should not be needed for summary-only lookup');
+    }
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80 });
+
+  const result = await resolver.resolveSummary({
+    word: 'OrderStatusPaid',
+    line: 4,
+    startCharacter: 11,
+    endCharacter: 26
+  });
+
+  assert.equal(result?.summary, 'Paid order status.');
+  assert.equal(result?.location, undefined);
+  assert.equal(definitionCalls, 0);
+});
+
+test('falls back to full resolution when lightweight summaries have no usable reference hover', async () => {
+  let definitionCalls = 0;
+  const lookup: DocumentationLookup = {
+    getHoverMarkdownLines: async () => ['```go', 'const OrderStatusPaid OrderStatus = "paid"', '```'],
+    getDefinitionLocation: async () => {
+      definitionCalls++;
+      return { uri: 'file:///status.go', line: 3, character: 6 };
+    },
+    getHoverMarkdownLinesAtLocation: async () => ['```go', 'const OrderStatusPaid OrderStatus = "paid"', '```'],
+    getDefinitionSourceLines: async () => ['// Paid status from source comment.']
+  };
+  const resolver = new DocumentationResolver(lookup, { maxHintLength: 80 });
+
+  const result = await resolver.resolveSummary(
+    {
+      word: 'OrderStatusPaid',
+      line: 8,
+      startCharacter: 12,
+      endCharacter: 27
+    },
+    '',
+    0,
+    goLanguageAdapter
+  );
+
+  assert.equal(result?.summary, 'Paid status from source comment.');
+  assert.deepEqual(result?.location, { uri: 'file:///status.go', line: 3, character: 6 });
+  assert.equal(definitionCalls, 1);
+});
+
 test('falls back to definition hover when reference hover has no documentation', async () => {
   const lookup: DocumentationLookup = {
     getHoverMarkdownLines: async () => ['```go', 'const OrderStatusPaid OrderStatus = 1', '```'],

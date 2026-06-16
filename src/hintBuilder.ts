@@ -25,9 +25,15 @@ export interface CommentHint {
   label: string;
   tooltip: string;
   location?: LocationLike;
+  candidate?: SymbolCandidate;
 }
 
 export interface CommentHintResolver {
+  resolveSummary?(
+    candidate: SymbolCandidate,
+    documentUri: string,
+    documentVersion: number
+  ): Promise<ResolvedDocumentation | undefined>;
   resolve(
     candidate: SymbolCandidate,
     documentUri: string,
@@ -44,6 +50,7 @@ export interface BuildCommentHintsInput {
   config: CommentDocLensConfig;
   languageAdapter?: LanguageAdapter;
   resolver: CommentHintResolver;
+  includeCandidateData?: boolean;
   isCancellationRequested?: () => boolean;
 }
 
@@ -99,6 +106,9 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
       label: `${input.config.hintPrefix ?? '// '}${documentation.summary}`,
       tooltip: documentation.fullText
     };
+    if (input.includeCandidateData) {
+      hint.candidate = candidate;
+    }
     if (documentation.location) {
       hint.location = documentation.location;
     }
@@ -154,7 +164,7 @@ async function resolveCandidate(
   }
 
   const documentation = await withTimeout(
-    input.resolver.resolve(candidate, input.documentUri, input.documentVersion),
+    (input.resolver.resolveSummary ?? input.resolver.resolve)(candidate, input.documentUri, input.documentVersion),
     getResolveTimeoutMs(input, languageAdapter)
   );
   if (!documentation || input.isCancellationRequested?.()) {

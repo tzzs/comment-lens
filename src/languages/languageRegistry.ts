@@ -38,7 +38,10 @@ export const typescriptFamilyLanguageAdapter: LanguageAdapter = {
   displayName: 'TypeScript family',
   supportLevel: 'stable',
   isDeclarationCandidate(candidate, line) {
-    return isDeclarationName(candidate, line) || isDeclarationContext(candidate, line);
+    return isDeclarationName(candidate, line)
+      || isDeclarationContext(candidate, line)
+      || isFunctionLikeDeclarationName(candidate, line)
+      || isFunctionParameterName(candidate, line);
   },
   isNoisyCandidate(candidate, line, languageId) {
     return isJsxTagName(candidate, line, languageId) || isJsxAttributeName(candidate, line, languageId);
@@ -48,10 +51,12 @@ export const typescriptFamilyLanguageAdapter: LanguageAdapter = {
 export const pythonLanguageAdapter: LanguageAdapter = {
   languageIds: ['python'],
   displayName: 'Python',
-  supportLevel: 'experimental',
+  supportLevel: 'stable',
   recommendedExtensions: ['ms-python.python', 'ms-python.vscode-pylance'],
   isDeclarationCandidate(candidate, line) {
-    return isPythonDeclarationName(candidate, line) || isPythonAssignmentName(candidate, line);
+    return isPythonDeclarationName(candidate, line)
+      || isPythonFunctionSignatureCandidate(candidate, line)
+      || isPythonAssignmentName(candidate, line);
   },
   sourceComment: {
     canRead(location) {
@@ -69,10 +74,10 @@ export const pythonLanguageAdapter: LanguageAdapter = {
 export const javaLanguageAdapter: LanguageAdapter = {
   languageIds: ['java'],
   displayName: 'Java',
-  supportLevel: 'experimental',
+  supportLevel: 'stable',
   recommendedExtensions: ['vscjava.vscode-java-pack'],
   isDeclarationCandidate(candidate, line) {
-    return isJavaDeclarationName(candidate, line);
+    return isJavaDeclarationName(candidate, line) || isJavaMethodSignatureCandidate(candidate, line);
   },
   sourceComment: {
     canRead(location) {
@@ -90,10 +95,10 @@ export const javaLanguageAdapter: LanguageAdapter = {
 export const rustLanguageAdapter: LanguageAdapter = {
   languageIds: ['rust'],
   displayName: 'Rust',
-  supportLevel: 'experimental',
+  supportLevel: 'stable',
   recommendedExtensions: ['rust-lang.rust-analyzer'],
   isDeclarationCandidate(candidate, line) {
-    return isRustDeclarationName(candidate, line);
+    return isRustDeclarationName(candidate, line) || isRustFunctionSignatureCandidate(candidate, line);
   },
   sourceComment: {
     canRead(location) {
@@ -111,8 +116,22 @@ export const rustLanguageAdapter: LanguageAdapter = {
 export const csharpLanguageAdapter: LanguageAdapter = {
   languageIds: ['csharp'],
   displayName: 'C#',
-  supportLevel: 'hover-only',
+  supportLevel: 'experimental',
   recommendedExtensions: ['ms-dotnettools.csdevkit'],
+  isDeclarationCandidate(candidate, line) {
+    return isCSharpDeclarationName(candidate, line) || isCSharpMethodSignatureCandidate(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.cs');
+    },
+    findDefinitionLine(document, candidate) {
+      return findCSharpDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingLineCommentLines(document, definitionLine, ['///']);
+    }
+  },
   documentationQuality: {
     minimumWords: 2
   }
@@ -121,10 +140,10 @@ export const csharpLanguageAdapter: LanguageAdapter = {
 export const phpLanguageAdapter: LanguageAdapter = {
   languageIds: ['php'],
   displayName: 'PHP',
-  supportLevel: 'experimental',
+  supportLevel: 'stable',
   recommendedExtensions: ['bmewburn.vscode-intelephense-client'],
   isDeclarationCandidate(candidate, line) {
-    return isPhpDeclarationName(candidate, line);
+    return isPhpDeclarationName(candidate, line) || isPhpFunctionSignatureCandidate(candidate, line);
   },
   sourceComment: {
     canRead(location) {
@@ -142,8 +161,22 @@ export const phpLanguageAdapter: LanguageAdapter = {
 export const rubyLanguageAdapter: LanguageAdapter = {
   languageIds: ['ruby'],
   displayName: 'Ruby',
-  supportLevel: 'hover-only',
+  supportLevel: 'experimental',
   recommendedExtensions: ['shopify.ruby-lsp'],
+  isDeclarationCandidate(candidate, line) {
+    return isRubyDeclarationName(candidate, line) || isRubyFunctionSignatureCandidate(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.rb');
+    },
+    findDefinitionLine(document, candidate) {
+      return findRubyDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingLineCommentLines(document, definitionLine, ['#']);
+    }
+  },
   documentationQuality: {
     minimumWords: 2
   }
@@ -152,8 +185,22 @@ export const rubyLanguageAdapter: LanguageAdapter = {
 export const kotlinLanguageAdapter: LanguageAdapter = {
   languageIds: ['kotlin'],
   displayName: 'Kotlin',
-  supportLevel: 'hover-only',
+  supportLevel: 'experimental',
   recommendedExtensions: ['fwcd.kotlin'],
+  isDeclarationCandidate(candidate, line) {
+    return isKotlinDeclarationName(candidate, line) || isKotlinFunctionSignatureCandidate(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.kt');
+    },
+    findDefinitionLine(document, candidate) {
+      return findKotlinDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingBlockCommentLines(document, definitionLine);
+    }
+  },
   documentationQuality: {
     minimumWords: 2
   }
@@ -162,8 +209,22 @@ export const kotlinLanguageAdapter: LanguageAdapter = {
 export const swiftLanguageAdapter: LanguageAdapter = {
   languageIds: ['swift'],
   displayName: 'Swift',
-  supportLevel: 'hover-only',
+  supportLevel: 'experimental',
   recommendedExtensions: ['swiftlang.swift-vscode'],
+  isDeclarationCandidate(candidate, line) {
+    return isSwiftDeclarationName(candidate, line) || isSwiftFunctionSignatureCandidate(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithExtension(location.uri, '.swift');
+    },
+    findDefinitionLine(document, candidate) {
+      return findSwiftDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingDocCommentLines(document, definitionLine);
+    }
+  },
   documentationQuality: {
     minimumWords: 2
   }
@@ -172,8 +233,22 @@ export const swiftLanguageAdapter: LanguageAdapter = {
 export const cppLanguageAdapter: LanguageAdapter = {
   languageIds: ['c', 'cpp'],
   displayName: 'C/C++',
-  supportLevel: 'hover-only',
+  supportLevel: 'experimental',
   recommendedExtensions: ['ms-vscode.cpptools'],
+  isDeclarationCandidate(candidate, line) {
+    return isCppDeclarationName(candidate, line) || isCppFunctionSignatureCandidate(candidate, line);
+  },
+  sourceComment: {
+    canRead(location) {
+      return isFilePathWithAnyExtension(location.uri, ['.c', '.cc', '.cpp', '.cxx', '.h', '.hh', '.hpp', '.hxx']);
+    },
+    findDefinitionLine(document, candidate) {
+      return findCppDefinitionLine(document, candidate.word, candidate.line);
+    },
+    collectLeadingComments(document, definitionLine) {
+      return collectLeadingDocCommentLines(document, definitionLine);
+    }
+  },
   documentationQuality: {
     minimumWords: 2
   }
@@ -238,6 +313,167 @@ function isDeclarationContext(candidate: { startCharacter: number; endCharacter:
   }
 
   return !/\bcase\s+$/.test(line.slice(0, candidate.startCharacter));
+}
+
+function isFunctionLikeDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const next = nextNonWhitespaceCharacter(line, candidate.endCharacter);
+  if (next !== '(') {
+    return false;
+  }
+
+  const openParen = line.indexOf('(', candidate.endCharacter);
+  if (openParen < 0) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  if (closeParen < 0) {
+    return false;
+  }
+
+  const afterCloseParen = line.slice(closeParen + 1).trimStart();
+  return afterCloseParen.startsWith('{') || afterCloseParen.startsWith(':');
+}
+
+function isFunctionParameterName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const openParen = line.lastIndexOf('(', candidate.startCharacter);
+  if (openParen < 0 || candidate.endCharacter <= openParen) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  if (closeParen < candidate.endCharacter) {
+    return false;
+  }
+
+  const beforeOpenParen = line.slice(0, openParen).trimEnd();
+  const afterCloseParen = line.slice(closeParen + 1).trimStart();
+  if (afterCloseParen.startsWith('=>')) {
+    return true;
+  }
+
+  const looksLikeFunctionDeclaration = /\bfunction(?:\s+[$_\p{L}][$_\p{L}\p{N}]*)?$/u.test(beforeOpenParen);
+  if (looksLikeFunctionDeclaration) {
+    return true;
+  }
+
+  const looksLikeMethodDeclaration = /[$_\p{L}][$_\p{L}\p{N}]*$/u.test(beforeOpenParen)
+    && (afterCloseParen.startsWith('{') || afterCloseParen.startsWith(':'));
+  return looksLikeMethodDeclaration;
+}
+
+function findMatchingCloseParen(line: string, openParen: number): number {
+  let depth = 0;
+  for (let character = openParen; character < line.length; character++) {
+    if (line[character] === '(') {
+      depth++;
+      continue;
+    }
+
+    if (line[character] !== ')') {
+      continue;
+    }
+
+    depth--;
+    if (depth === 0) {
+      return character;
+    }
+  }
+
+  return -1;
+}
+
+function isCandidateInRange(
+  candidate: { startCharacter: number; endCharacter: number },
+  startCharacter: number,
+  endCharacter: number
+): boolean {
+  return candidate.startCharacter >= startCharacter && candidate.endCharacter <= endCharacter;
+}
+
+function firstNonWhitespaceIndex(line: string): number {
+  const index = line.search(/\S/);
+  return index >= 0 ? index : line.length;
+}
+
+function findFirstTokenIndex(line: string, tokens: readonly string[], startCharacter: number): number {
+  let firstIndex = -1;
+  for (const token of tokens) {
+    const index = line.indexOf(token, startCharacter);
+    if (index >= 0 && (firstIndex < 0 || index < firstIndex)) {
+      firstIndex = index;
+    }
+  }
+
+  return firstIndex;
+}
+
+function isKeywordFunctionSignatureCandidate(
+  candidate: { startCharacter: number; endCharacter: number },
+  line: string,
+  keywordPattern: RegExp,
+  bodyMarkers: readonly string[]
+): boolean {
+  const keywordMatch = keywordPattern.exec(line);
+  if (!keywordMatch) {
+    return false;
+  }
+
+  const bodyStart = findFirstTokenIndex(line, bodyMarkers, keywordMatch.index + keywordMatch[0].length);
+  const signatureEnd = bodyStart >= 0 ? bodyStart : line.length;
+  return isCandidateInRange(candidate, keywordMatch.index, signatureEnd);
+}
+
+function isCStyleMethodSignatureCandidate(
+  candidate: { startCharacter: number; endCharacter: number },
+  line: string,
+  tailPattern: RegExp
+): boolean {
+  const openParen = line.indexOf('(');
+  if (openParen < 0) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  if (closeParen < 0) {
+    return false;
+  }
+
+  const afterCloseParen = line.slice(closeParen + 1).trimStart();
+  if (!tailPattern.test(afterCloseParen)) {
+    return false;
+  }
+
+  const beforeOpenParen = line.slice(0, openParen).trimEnd();
+  const nameMatch = /[$_\p{L}][$_\p{L}\p{N}]*$/u.exec(beforeOpenParen);
+  if (!nameMatch) {
+    return false;
+  }
+
+  const prefix = beforeOpenParen.slice(0, nameMatch.index).trimEnd();
+  if (!isCStyleDeclarationPrefix(prefix)) {
+    return false;
+  }
+
+  const signatureEnd = findCStyleSignatureEnd(line, closeParen);
+  return isCandidateInRange(candidate, firstNonWhitespaceIndex(line), signatureEnd);
+}
+
+function isCStyleDeclarationPrefix(prefix: string): boolean {
+  if (prefix.length === 0 || prefix.includes('=') || prefix.includes('.')) {
+    return false;
+  }
+
+  if (/^(?:return|throw|new|if|for|while|switch|catch|using)$/.test(prefix)) {
+    return false;
+  }
+
+  return /\s/.test(prefix) || !prefix.endsWith('::');
+}
+
+function findCStyleSignatureEnd(line: string, closeParen: number): number {
+  const bodyStart = findFirstTokenIndex(line, ['{', ';', '=>'], closeParen + 1);
+  return bodyStart >= 0 ? bodyStart : line.length;
 }
 
 function nextNonWhitespaceCharacter(line: string, startCharacter: number): string | undefined {
@@ -344,9 +580,30 @@ function isFilePathWithExtension(uri: string, extension: string): boolean {
   }
 }
 
+function isFilePathWithAnyExtension(uri: string, extensions: readonly string[]): boolean {
+  return extensions.some((extension) => isFilePathWithExtension(uri, extension));
+}
+
 function isPythonDeclarationName(candidate: { startCharacter: number }, line: string): boolean {
   const beforeCandidate = line.slice(0, candidate.startCharacter);
   return /^\s*(?:def|class)\s+$/.test(beforeCandidate);
+}
+
+function isPythonFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const definitionMatch = /^\s*def\s+/.exec(line);
+  if (!definitionMatch) {
+    return false;
+  }
+
+  const openParen = line.indexOf('(', definitionMatch[0].length);
+  if (openParen < 0) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  const colon = closeParen >= 0 ? line.indexOf(':', closeParen + 1) : -1;
+  const signatureEnd = colon >= 0 ? colon : line.length;
+  return isCandidateInRange(candidate, definitionMatch.index, signatureEnd);
 }
 
 function isPythonAssignmentName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
@@ -445,12 +702,11 @@ function escapeRegExp(value: string): string {
 
 function isJavaDeclarationName(candidate: { word: string; startCharacter: number; endCharacter: number }, line: string): boolean {
   const beforeCandidate = line.slice(0, candidate.startCharacter);
-  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
-  if (/\b(?:class|enum|interface|record)\s+$/.test(beforeCandidate)) {
-    return true;
-  }
+  return /\b(?:class|enum|interface|record)\s+$/.test(beforeCandidate);
+}
 
-  return afterCandidate.startsWith('(');
+function isJavaMethodSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isCStyleMethodSignatureCandidate(candidate, line, /^(?:$|[;{]|\bthrows\b)/);
 }
 
 function findJavaDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
@@ -513,7 +769,24 @@ function isRustDeclarationName(candidate: { startCharacter: number; endCharacter
     return true;
   }
 
-  return afterCandidate.startsWith(',') || afterCandidate.startsWith('(') || afterCandidate.startsWith('{') || afterCandidate.startsWith(';');
+  return afterCandidate.startsWith(',')
+    || isRustTupleVariantDeclaration(candidate, line)
+    || afterCandidate.startsWith('{')
+    || afterCandidate.startsWith(';');
+}
+
+function isRustFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isKeywordFunctionSignatureCandidate(candidate, line, /\bfn\b/, ['{', ';']);
+}
+
+function isRustTupleVariantDeclaration(candidate: { endCharacter: number }, line: string): boolean {
+  const openParen = line.indexOf('(', candidate.endCharacter);
+  if (openParen < 0) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  return closeParen > openParen && line.slice(closeParen + 1).trimStart().startsWith(',');
 }
 
 function findRustDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
@@ -577,6 +850,17 @@ function isPhpDeclarationName(candidate: { startCharacter: number; endCharacter:
   return isPhpVariableAssignmentName(candidate, line);
 }
 
+function isPhpFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const functionMatch = /\bfunction\s+&?\s*[$_\p{L}][$_\p{L}\p{N}]*\s*\(/u.exec(line);
+  if (!functionMatch) {
+    return false;
+  }
+
+  const bodyStart = findFirstTokenIndex(line, ['{', ';'], functionMatch.index + functionMatch[0].length);
+  const signatureEnd = bodyStart >= 0 ? bodyStart : line.length;
+  return isCandidateInRange(candidate, functionMatch.index, signatureEnd);
+}
+
 function isPhpPropertyDeclaration(candidate: { startCharacter: number }, line: string): boolean {
   const beforeCandidate = line.slice(0, candidate.startCharacter);
   if (!beforeCandidate.endsWith('$')) {
@@ -618,4 +902,181 @@ function findPhpDefinitionLine(document: { lineAt(line: number): { text: string 
   }
 
   return undefined;
+}
+
+function isCSharpDeclarationName(candidate: { word: string; startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  return /\b(?:class|enum|interface|record|struct)\s+$/.test(beforeCandidate);
+}
+
+function isCSharpMethodSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isCStyleMethodSignatureCandidate(candidate, line, /^(?:$|[;{]|=>|\bwhere\b)/);
+}
+
+function findCSharpDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  return findDefinitionLine(document, referenceLine, [
+    new RegExp(`\\b(?:class|enum|interface|record|struct)\\s+${wordPattern}\\b`),
+    new RegExp(`\\b${wordPattern}\\s*\\(`),
+    new RegExp(`\\b${wordPattern}\\s*(?:=>|\\{|;)`)
+  ]);
+}
+
+function isRubyDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  return /^\s*(?:def|class|module)\s+$/.test(beforeCandidate) || afterCandidate.startsWith('=');
+}
+
+function isRubyFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const definitionMatch = /^\s*def\s+/.exec(line);
+  if (!definitionMatch) {
+    return false;
+  }
+
+  const methodStart = definitionMatch[0].length;
+  const methodMatch = /(?:self\.)?[$_\p{L}][$_\p{L}\p{N}_]*[?!=]?/u.exec(line.slice(methodStart));
+  if (!methodMatch) {
+    return false;
+  }
+
+  const methodEnd = methodStart + methodMatch.index + methodMatch[0].length;
+  return candidate.startCharacter > methodEnd;
+}
+
+function findRubyDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  return findDefinitionLine(document, referenceLine, [
+    new RegExp(`^\\s*(?:def|class|module)\\s+${wordPattern}\\b`),
+    new RegExp(`^\\s*${wordPattern}\\s*=`)
+  ]);
+}
+
+function isKotlinDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  if (/\b(?:class|interface|object|fun|val|var)\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  return afterCandidate.startsWith(':') || afterCandidate.startsWith('=');
+}
+
+function isKotlinFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isKeywordFunctionSignatureCandidate(candidate, line, /\bfun\b/, ['{', '=']);
+}
+
+function findKotlinDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  return findDefinitionLine(document, referenceLine, [
+    new RegExp(`\\b(?:class|interface|object)\\s+${wordPattern}\\b`),
+    new RegExp(`\\bfun\\s+${wordPattern}\\s*\\(`),
+    new RegExp(`\\b(?:val|var)\\s+${wordPattern}\\b`)
+  ]);
+}
+
+function isSwiftDeclarationName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  if (/\b(?:actor|class|enum|func|let|protocol|struct|var|case)\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  return afterCandidate.startsWith(':') || afterCandidate.startsWith('=');
+}
+
+function isSwiftFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isKeywordFunctionSignatureCandidate(candidate, line, /\bfunc\b/, ['{']);
+}
+
+function findSwiftDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  return findDefinitionLine(document, referenceLine, [
+    new RegExp(`\\b(?:actor|class|enum|protocol|struct)\\s+${wordPattern}\\b`),
+    new RegExp(`\\bfunc\\s+${wordPattern}\\s*\\(`),
+    new RegExp(`\\b(?:let|var)\\s+${wordPattern}\\b`),
+    new RegExp(`\\bcase\\s+${wordPattern}\\b`)
+  ]);
+}
+
+function isCppDeclarationName(candidate: { word: string; startCharacter: number; endCharacter: number }, line: string): boolean {
+  const beforeCandidate = line.slice(0, candidate.startCharacter);
+  const afterCandidate = line.slice(candidate.endCharacter).trimStart();
+  if (/\b(?:class|enum|struct|typedef)\s+$/.test(beforeCandidate)) {
+    return true;
+  }
+
+  return afterCandidate.startsWith(';') || afterCandidate.startsWith('=');
+}
+
+function isCppFunctionSignatureCandidate(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  return isCStyleMethodSignatureCandidate(
+    candidate,
+    line,
+    /^(?:$|[;{:]|->|\b(?:const|noexcept|override|final|requires)\b|=\s*(?:0|default|delete)\b)/
+  );
+}
+
+function findCppDefinitionLine(document: { lineAt(line: number): { text: string }; lineCount: number }, word: string, referenceLine: number): number | undefined {
+  const wordPattern = escapeRegExp(word);
+  return findDefinitionLine(document, referenceLine, [
+    new RegExp(`\\b(?:class|enum|struct)\\s+${wordPattern}\\b`),
+    new RegExp(`\\b${wordPattern}\\s*\\(`),
+    new RegExp(`^\\s*#define\\s+${wordPattern}\\b`),
+    new RegExp(`\\b${wordPattern}\\s*(?:=|;)`)
+  ]);
+}
+
+function findDefinitionLine(
+  document: { lineAt(line: number): { text: string }; lineCount: number },
+  referenceLine: number,
+  definitionPatterns: readonly RegExp[]
+): number | undefined {
+  for (let line = 0; line < document.lineCount; line++) {
+    if (line === referenceLine) {
+      continue;
+    }
+
+    const text = document.lineAt(line).text;
+    if (definitionPatterns.some((pattern) => pattern.test(text))) {
+      return line;
+    }
+  }
+
+  return undefined;
+}
+
+function collectLeadingDocCommentLines(
+  document: { lineAt(line: number): { text: string }; lineCount: number },
+  definitionLine: number
+): string[] {
+  const lineComments = collectLeadingLineCommentLines(document, definitionLine, ['///', '//!']);
+  if (lineComments.length > 0) {
+    return lineComments;
+  }
+
+  return collectLeadingBlockCommentLines(document, definitionLine);
+}
+
+function collectLeadingLineCommentLines(
+  document: { lineAt(line: number): { text: string }; lineCount: number },
+  definitionLine: number,
+  prefixes: readonly string[]
+): string[] {
+  const collected: string[] = [];
+  for (let line = definitionLine - 1; line >= 0; line--) {
+    const text = document.lineAt(line).text.trim();
+    if (prefixes.some((prefix) => text.startsWith(prefix))) {
+      collected.unshift(text);
+      continue;
+    }
+
+    if (text.length === 0 && collected.length === 0) {
+      continue;
+    }
+
+    break;
+  }
+
+  return collected;
 }

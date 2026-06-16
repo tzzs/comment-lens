@@ -59,7 +59,7 @@ export class DocumentationResolver {
     documentVersion = 0,
     languageAdapter?: LanguageAdapter
   ): Promise<ResolvedDocumentation | undefined> {
-    const cacheKey = `${documentUri}:${documentVersion}:${candidate.line}:${candidate.startCharacter}:${candidate.endCharacter}`;
+    const cacheKey = this.getCacheKey('full', candidate, documentUri, documentVersion);
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
@@ -92,6 +92,32 @@ export class DocumentationResolver {
     );
     const fromSource = fromDefinition ?? await this.getSourceDocumentation(location, candidate, languageAdapter);
     const result = fromSource ? { ...fromSource, location } : undefined;
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async resolveSummary(
+    candidate: SymbolCandidate,
+    documentUri = '',
+    documentVersion = 0,
+    languageAdapter?: LanguageAdapter
+  ): Promise<ResolvedDocumentation | undefined> {
+    const cacheKey = this.getCacheKey('summary', candidate, documentUri, documentVersion);
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    const fromReference = formatDocumentation(
+      await this.lookup.getHoverMarkdownLines(candidate, documentUri),
+      this.options.maxHintLength,
+      this.getFormatOptions(languageAdapter)
+    );
+    if (fromReference) {
+      this.setCache(cacheKey, fromReference);
+      return fromReference;
+    }
+
+    const result = await this.resolve(candidate, documentUri, documentVersion, languageAdapter);
     this.setCache(cacheKey, result);
     return result;
   }
@@ -133,5 +159,21 @@ export class DocumentationResolver {
     if (oldestKey) {
       this.cache.delete(oldestKey);
     }
+  }
+
+  private getCacheKey(
+    kind: 'full' | 'summary',
+    candidate: SymbolCandidate,
+    documentUri: string,
+    documentVersion: number
+  ): string {
+    return [
+      kind,
+      documentUri,
+      documentVersion,
+      candidate.line,
+      candidate.startCharacter,
+      candidate.endCharacter
+    ].join(':');
   }
 }

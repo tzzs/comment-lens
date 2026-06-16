@@ -40,7 +40,12 @@
     "assets/icon.png",
     "assets/social-preview.png",
     "assets/social-preview.svg",
+    "assets/demo-before.png",
+    "assets/demo-after.png",
     "out/src/**/*.js",
+    "package.nls.json",
+    "package.nls.zh-cn.json",
+    "docs/**/*.md",
     "README.md",
     "README_CN.md",
     "CHANGELOG.md",
@@ -64,22 +69,42 @@
     "onLanguage:cpp",
     "onCommand:commentDocLens.toggle",
     "onCommand:commentDocLens.refresh",
-    "onCommand:commentDocLens.showLanguageStatus"
+    "onCommand:commentDocLens.showLanguageStatus",
+    "onCommand:commentDocLens.diagnoseWorkspace",
+    "onCommand:commentDocLens.copyDiagnosticsForIssue",
+    "onCommand:commentDocLens.explainHiddenHint",
+    "onCommand:commentDocLens.openSampleGallery"
   ],
   "main": "./out/src/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "commentDocLens.toggle",
-        "title": "Comment Doc Lens: Toggle"
+        "title": "%commentDocLens.commands.toggle.title%"
       },
       {
         "command": "commentDocLens.refresh",
-        "title": "Comment Doc Lens: Refresh"
+        "title": "%commentDocLens.commands.refresh.title%"
       },
       {
         "command": "commentDocLens.showLanguageStatus",
-        "title": "Comment Doc Lens: Show Language Status"
+        "title": "%commentDocLens.commands.showLanguageStatus.title%"
+      },
+      {
+        "command": "commentDocLens.diagnoseWorkspace",
+        "title": "%commentDocLens.commands.diagnoseWorkspace.title%"
+      },
+      {
+        "command": "commentDocLens.copyDiagnosticsForIssue",
+        "title": "%commentDocLens.commands.copyDiagnosticsForIssue.title%"
+      },
+      {
+        "command": "commentDocLens.explainHiddenHint",
+        "title": "%commentDocLens.commands.explainHiddenHint.title%"
+      },
+      {
+        "command": "commentDocLens.openSampleGallery",
+        "title": "%commentDocLens.commands.openSampleGallery.title%"
       }
     ],
     "configuration": {
@@ -88,7 +113,7 @@
         "commentDocLens.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable Comment Doc Lens inlay hints."
+          "description": "%commentDocLens.configuration.enabled.description%"
         },
         "commentDocLens.languages": {
           "type": "array",
@@ -112,7 +137,7 @@
             "c",
             "cpp"
           ],
-          "description": "Registered adapter language identifiers where Comment Doc Lens runs. This setting filters supported adapter languages; unknown language identifiers are ignored."
+          "description": "%commentDocLens.configuration.languages.description%"
         },
         "commentDocLens.languageOverrides": {
           "type": "object",
@@ -122,73 +147,73 @@
             "properties": {
               "enabled": {
                 "type": "boolean",
-                "description": "Enable or disable Comment Doc Lens for this language."
+                "description": "%commentDocLens.configuration.languageOverrides.enabled.description%"
               }
             }
           },
-          "description": "Per-language Comment Doc Lens settings keyed by VS Code language identifier. For example: { \"python\": { \"enabled\": false } }."
+          "description": "%commentDocLens.configuration.languageOverrides.description%"
         },
         "commentDocLens.maxLineLength": {
           "type": "number",
           "default": 2000,
           "minimum": 80,
-          "description": "Maximum source line length scanned for candidate symbols. Longer lines are skipped to avoid expensive lookups in generated or minified files."
+          "description": "%commentDocLens.configuration.maxLineLength.description%"
         },
         "commentDocLens.maxHintLength": {
           "type": "number",
           "default": 120,
           "minimum": 20,
-          "description": "Maximum length of the inline comment summary."
+          "description": "%commentDocLens.configuration.maxHintLength.description%"
         },
         "commentDocLens.maxHintsPerRequest": {
           "type": "number",
           "default": 80,
           "minimum": 1,
-          "description": "Maximum number of hints produced per inlay hint request."
+          "description": "%commentDocLens.configuration.maxHintsPerRequest.description%"
         },
         "commentDocLens.minIdentifierLength": {
           "type": "number",
           "default": 2,
           "minimum": 1,
-          "description": "Minimum identifier length before hints are shown unless documentation includes a definition location."
+          "description": "%commentDocLens.configuration.minIdentifierLength.description%"
         },
         "commentDocLens.minimumDocumentationWords": {
           "type": "number",
           "default": 1,
           "minimum": 1,
-          "description": "Minimum number of words required in a documentation summary before it can be shown."
+          "description": "%commentDocLens.configuration.minimumDocumentationWords.description%"
         },
         "commentDocLens.preferPropertyTail": {
           "type": "boolean",
           "default": true,
-          "description": "Prefer the final identifier in property chains, such as baz in foo.bar.baz."
+          "description": "%commentDocLens.configuration.preferPropertyTail.description%"
         },
         "commentDocLens.dedupeLineHints": {
           "type": "boolean",
           "default": true,
-          "description": "Deduplicate repeated inlay hint summaries on the same line."
+          "description": "%commentDocLens.configuration.dedupeLineHints.description%"
         },
         "commentDocLens.resolveTimeoutMs": {
           "type": "number",
           "default": 750,
           "minimum": 100,
-          "description": "Maximum time in milliseconds to wait for a single documentation lookup."
+          "description": "%commentDocLens.configuration.resolveTimeoutMs.description%"
         },
         "commentDocLens.maxCacheEntries": {
           "type": "number",
           "default": 1000,
           "minimum": 100,
-          "description": "Maximum number of cached documentation lookup results."
+          "description": "%commentDocLens.configuration.maxCacheEntries.description%"
         },
         "commentDocLens.hintPrefix": {
           "type": "string",
           "default": "// ",
-          "description": "Prefix displayed before each inline documentation summary."
+          "description": "%commentDocLens.configuration.hintPrefix.description%"
         },
         "commentDocLens.enableHintInteractions": {
           "type": "boolean",
           "default": false,
-          "description": "Enable inlay hint label tooltips and definition locations when documentation lookup provides them."
+          "description": "%commentDocLens.configuration.enableHintInteractions.description%"
         }
       }
     }
@@ -200,6 +225,7 @@
     "test:coverage": "npm run compile && node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-branches=80 --test-coverage-functions=80 out/test/*.test.js",
     "test:integration": "npm run compile && node out/test/integration/runTest.js",
     "test:all": "npm test && npm run test:integration",
+    "harness:check": "node scripts/check-harness-docs.js",
     "package": "vsce package",
     "vscode:prepublish": "npm run compile"
   },
