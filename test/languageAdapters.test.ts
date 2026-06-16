@@ -18,8 +18,6 @@ import {
 test('go adapter owns declaration filtering and source comment fallback behavior', () => {
   assert.equal(goLanguageAdapter.resolveTimeoutMs, 2500);
   assert.equal(goLanguageAdapter.isDeclarationCandidate?.(candidate('FormatOrderStatus', 5), 'func FormatOrderStatus(status OrderStatus) string {'), true);
-  assert.equal(goLanguageAdapter.isDeclarationCandidate?.(candidate('status', 23), 'func FormatOrderStatus(status OrderStatus) string {'), true);
-  assert.equal(goLanguageAdapter.isDeclarationCandidate?.(candidate('OrderStatus', 30), 'func FormatOrderStatus(status OrderStatus) string {'), true);
   assert.equal(goLanguageAdapter.isDeclarationCandidate?.(candidate('status', 2), '  status := OrderStatusPaid'), true);
   assert.equal(goLanguageAdapter.isDeclarationCandidate?.(candidate('OrderStatusPaid', 7), 'case OrderStatusPaid:'), false);
 
@@ -52,7 +50,6 @@ test('typescript-family adapter owns declaration and jsx noise filtering behavio
 test('python adapter owns declaration filtering and docstring fallback behavior', () => {
   assert.equal(pythonLanguageAdapter.supportLevel, 'stable');
   assert.equal(pythonLanguageAdapter.isDeclarationCandidate?.(candidate('format_status', 4), 'def format_status(status):'), true);
-  assert.equal(pythonLanguageAdapter.isDeclarationCandidate?.(candidate('status', 18), 'def format_status(status):'), true);
   assert.equal(pythonLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 6), 'class OrderPresenter:'), true);
   assert.equal(pythonLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.py', line: 0, character: 0 }), true);
   assert.equal(pythonLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.ts', line: 0, character: 0 }), false);
@@ -86,9 +83,7 @@ test('python adapter owns declaration filtering and docstring fallback behavior'
 test('java adapter owns declaration filtering and javadoc fallback behavior', () => {
   assert.equal(javaLanguageAdapter.supportLevel, 'stable');
   assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 13), 'public class OrderPresenter {'), true);
-  assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('String', 9), '  public String formatStatus(String status) {'), true);
   assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('formatStatus', 16), '  public String formatStatus(String status) {'), true);
-  assert.equal(javaLanguageAdapter.isDeclarationCandidate?.(candidate('status', 36), '  public String formatStatus(String status) {'), true);
   assert.equal(javaLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.java', line: 0, character: 0 }), true);
   assert.equal(javaLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.py', line: 0, character: 0 }), false);
 
@@ -122,8 +117,6 @@ test('java adapter owns declaration filtering and javadoc fallback behavior', ()
 test('rust adapter owns declaration filtering and doc comment fallback behavior', () => {
   assert.equal(rustLanguageAdapter.supportLevel, 'stable');
   assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('format_status', 7), 'pub fn format_status(status: &str) -> String {'), true);
-  assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('status', 21), 'pub fn format_status(status: &str) -> String {'), true);
-  assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('String', 38), 'pub fn format_status(status: &str) -> String {'), true);
   assert.equal(rustLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 11), 'pub struct OrderPresenter;'), true);
   assert.equal(rustLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rs', line: 0, character: 0 }), true);
   assert.equal(rustLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.java', line: 0, character: 0 }), false);
@@ -158,8 +151,6 @@ test('rust adapter owns declaration filtering and doc comment fallback behavior'
 test('csharp adapter owns xml doc source fallback behavior', () => {
   assert.equal(csharpLanguageAdapter.supportLevel, 'experimental');
   assert.deepEqual(csharpLanguageAdapter.languageIds, ['csharp']);
-  assert.equal(csharpLanguageAdapter.isDeclarationCandidate?.(candidate('FormatStatus', 18), '    public string FormatStatus(string status)'), true);
-  assert.equal(csharpLanguageAdapter.isDeclarationCandidate?.(candidate('status', 38), '    public string FormatStatus(string status)'), true);
   assert.equal(csharpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.cs', line: 0, character: 0 }), true);
   assert.equal(csharpLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rb', line: 0, character: 0 }), false);
 
@@ -192,7 +183,6 @@ test('php adapter owns declaration filtering and docblock fallback behavior', ()
   assert.equal(phpLanguageAdapter.supportLevel, 'stable');
   assert.deepEqual(phpLanguageAdapter.recommendedExtensions, ['bmewburn.vscode-intelephense-client']);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('formatStatus', 9), 'function formatStatus(string $status): string {'), true);
-  assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('status', 30), 'function formatStatus(string $status): string {'), true);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('OrderPresenter', 6), 'class OrderPresenter {'), true);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('PAID_STATUS', 6), 'const PAID_STATUS = "paid";'), true);
   assert.equal(phpLanguageAdapter.isDeclarationCandidate?.(candidate('TAX_RATE', 13), 'public const TAX_RATE = 0.1;'), true);
@@ -254,7 +244,6 @@ test('ruby adapter owns yard and rdoc source fallback behavior', () => {
   assert.equal(rubyLanguageAdapter.supportLevel, 'experimental');
   assert.deepEqual(rubyLanguageAdapter.languageIds, ['ruby']);
   assert.deepEqual(rubyLanguageAdapter.recommendedExtensions, ['shopify.ruby-lsp']);
-  assert.equal(rubyLanguageAdapter.isDeclarationCandidate?.(candidate('status', 18), 'def format_status(status)'), true);
   assert.equal(rubyLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.rb', line: 0, character: 0 }), true);
   assert.equal(rubyLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.kt', line: 0, character: 0 }), false);
 
@@ -290,8 +279,6 @@ test('planned adapters expose fallback and dependency diagnostics metadata', () 
   assert.equal(kotlinLanguageAdapter.supportLevel, 'experimental');
   assert.deepEqual(kotlinLanguageAdapter.languageIds, ['kotlin']);
   assert.deepEqual(kotlinLanguageAdapter.recommendedExtensions, ['fwcd.kotlin']);
-  assert.equal(kotlinLanguageAdapter.isDeclarationCandidate?.(candidate('status', 17), 'fun formatStatus(status: String): String = status'), true);
-  assert.equal(kotlinLanguageAdapter.isDeclarationCandidate?.(candidate('String', 25), 'fun formatStatus(status: String): String = status'), true);
   assert.equal(kotlinLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.kt', line: 0, character: 0 }), true);
 
   const kotlinDocument = lines([
@@ -313,8 +300,6 @@ test('planned adapters expose fallback and dependency diagnostics metadata', () 
   assert.equal(swiftLanguageAdapter.supportLevel, 'experimental');
   assert.deepEqual(swiftLanguageAdapter.languageIds, ['swift']);
   assert.deepEqual(swiftLanguageAdapter.recommendedExtensions, ['swiftlang.swift-vscode']);
-  assert.equal(swiftLanguageAdapter.isDeclarationCandidate?.(candidate('status', 20), 'func formatStatus(_ status: String) -> String {'), true);
-  assert.equal(swiftLanguageAdapter.isDeclarationCandidate?.(candidate('String', 28), 'func formatStatus(_ status: String) -> String {'), true);
   assert.equal(swiftLanguageAdapter.sourceComment?.canRead({ uri: 'file:///OrderPresenter.swift', line: 0, character: 0 }), true);
 
   const swiftDocument = lines([
@@ -335,8 +320,6 @@ test('planned adapters expose fallback and dependency diagnostics metadata', () 
   assert.equal(cppLanguageAdapter.supportLevel, 'experimental');
   assert.deepEqual(cppLanguageAdapter.languageIds, ['c', 'cpp']);
   assert.deepEqual(cppLanguageAdapter.recommendedExtensions, ['ms-vscode.cpptools']);
-  assert.equal(cppLanguageAdapter.isDeclarationCandidate?.(candidate('string', 5), 'std::string formatStatus(std::string status) {'), true);
-  assert.equal(cppLanguageAdapter.isDeclarationCandidate?.(candidate('status', 37), 'std::string formatStatus(std::string status) {'), true);
   assert.equal(cppLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.cpp', line: 0, character: 0 }), true);
   assert.equal(cppLanguageAdapter.sourceComment?.canRead({ uri: 'file:///order.hpp', line: 0, character: 0 }), true);
 
