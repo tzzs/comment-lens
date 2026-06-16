@@ -4,6 +4,12 @@
 
 This gallery shows the intended reading experience across representative languages. Comment Doc Lens keeps source unchanged: it reads existing documentation from doc comments, docstrings, Javadoc, PHPDoc, XML docs, YARD/RDoc, KDoc, Swift documentation comments, Doxygen comments, or language-service hover output, then renders a short summary at the reference line.
 
+## Before and After
+
+| Before | After |
+| --- | --- |
+| ![VS Code before enabling Comment Doc Lens](../assets/demo-before.png) | ![VS Code after enabling Comment Doc Lens inline documentation hints](../assets/demo-after.png) |
+
 ## Go
 
 ```go

@@ -40,6 +40,8 @@
     "assets/icon.png",
     "assets/social-preview.png",
     "assets/social-preview.svg",
+    "assets/demo-before.png",
+    "assets/demo-after.png",
     "out/src/**/*.js",
     "package.nls.json",
     "package.nls.zh-cn.json",

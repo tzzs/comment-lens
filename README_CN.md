@@ -16,6 +16,12 @@
   <img src="assets/social-preview.png" alt="Comment Doc Lens 在 VS Code 中展示内联符号文档的预览图">
 </p>
 
+## 演示
+
+| 开启前 | 开启后 |
+| --- | --- |
+| <img src="assets/demo-before.png" alt="开启 Comment Doc Lens 前的 VS Code 编辑器"> | <img src="assets/demo-after.png" alt="开启 Comment Doc Lens 后在引用行尾展示内联文档提示"> |
+
 ## 为什么需要它
 
 Comment Doc Lens 把有用的定义文档放回你正在阅读的代码旁边。只要引用到的符号带有文档注释、JSDoc、docstring、Javadoc、PHPDoc，或语言服务能够返回有价值的 hover 文档，扩展就会把第一条有用摘要展示在当前行末尾。

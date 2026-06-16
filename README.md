@@ -16,6 +16,12 @@
   <img src="assets/social-preview.png" alt="Comment Doc Lens preview showing inline symbol documentation in VS Code">
 </p>
 
+## Demo
+
+| Before | After |
+| --- | --- |
+| <img src="assets/demo-before.png" alt="VS Code editor before enabling Comment Doc Lens"> | <img src="assets/demo-after.png" alt="VS Code editor after enabling Comment Doc Lens inline documentation hints"> |
+
 ## Why
 
 Comment Doc Lens keeps useful documentation close to the code you are reading. When a referenced symbol has a doc comment, JSDoc, docstring, Javadoc, PHPDoc, or language-service hover documentation, the extension renders the first useful summary at the end of the reference line.

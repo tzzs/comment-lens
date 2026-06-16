@@ -64,6 +64,7 @@ Comment Doc Lens 的定位是：
 - 新增 `docs/sample-gallery.md`，覆盖 Go、TypeScript、Python、Java、Rust、PHP 与第二批语言说明。
 - 新增 `docs/articles/inline-docs-without-generating-comments.md`，说明它是 reading tool，不是文档生成器、不调用 LLM、不上传源码。
 - README 和 README_CN 已链接 sample gallery、技术文章、维护指标和发布质量清单。
+- 新增真实 Before/After 截图：`assets/demo-before.png` 与 `assets/demo-after.png`，并同步 README、README_CN 和 sample gallery。
 
 ### P5：维护机制与指标
 
@@ -83,7 +84,7 @@ Comment Doc Lens 的定位是：
 - 发布前重新核对 Marketplace、Open VSX、GitHub release、release tag、README 链接和仓库 URL 是否都指向同一个 `comment-doc-lens` 入口。
 - 补 GitHub topics，覆盖 `vscode-extension`、`documentation`、`inlay-hints`、`doc-comments`、`docstring`、`code-reading` 等检索词。
 - 补 issue templates：bug report、missing hint diagnostics、language support request。
-- 补一张真实 Before/After 截图或 10 秒以内 GIF，并同步 README、Marketplace、Open VSX 和 release notes。
+- 可选补 10 秒以内 GIF，并同步 README、Marketplace、Open VSX 和 release notes。
 
 ### 语言质量证据
 
@@ -109,7 +110,7 @@ Comment Doc Lens 的定位是：
 
 1. 完成公开入口一致性核对。
 2. 补 GitHub topics 和 issue templates。
-3. 补真实 Before/After 截图或短 GIF。
+3. 可选补短 GIF，复用当前 Before/After 截图场景。
 4. 用 `Comment Doc Lens: Copy Diagnostics for Issue` 输出样例完善 issue 模板。
 
 ### 接下来 2-4 周
