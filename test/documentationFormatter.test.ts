@@ -42,6 +42,21 @@ test('returns undefined for signature-only content', () => {
   assert.equal(result, undefined);
 });
 
+test('ignores vscode hover command links without documentation', () => {
+  const result = formatDocumentation(
+    [
+      '```ts',
+      'const OrderStatusPaid: OrderStatus',
+      '```',
+      '[$(eye) Peek Definition](command:editor.action.peekDefinition)',
+      '[Go to Definition](command:editor.action.revealDefinition)'
+    ],
+    80
+  );
+
+  assert.equal(result, undefined);
+});
+
 test('filters low-value summaries below the configured word budget', () => {
   assert.equal(formatDocumentation(['Status'], 80, { minimumWords: 2 }), undefined);
 

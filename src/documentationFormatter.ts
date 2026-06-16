@@ -44,6 +44,10 @@ function normalizeDocumentation(markdownLines: readonly string[]): string[] {
       continue;
     }
 
+    if (isUiChromeLine(trimmed)) {
+      continue;
+    }
+
     const cleaned = cleanCommentMarker(trimmed);
     if (cleaned.length > 0 && !seen.has(cleaned)) {
       seen.add(cleaned);
@@ -61,6 +65,14 @@ function cleanCommentMarker(line: string): string {
     .replace(/^\*/, '')
     .replace(/^\/\//, '')
     .trim();
+}
+
+function isUiChromeLine(line: string): boolean {
+  if (/^[-*_]{3,}$/.test(line)) {
+    return true;
+  }
+
+  return line.replace(/\[[^\]]+\]\(\s*command:[^)]+\)/gi, '').trim().length === 0;
 }
 
 function truncate(value: string, maxLength: number): string {
