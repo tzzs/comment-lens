@@ -38,7 +38,9 @@ export const typescriptFamilyLanguageAdapter: LanguageAdapter = {
   displayName: 'TypeScript family',
   supportLevel: 'stable',
   isDeclarationCandidate(candidate, line) {
-    return isDeclarationName(candidate, line) || isDeclarationContext(candidate, line);
+    return isDeclarationName(candidate, line)
+      || isDeclarationContext(candidate, line)
+      || isFunctionParameterName(candidate, line);
   },
   isNoisyCandidate(candidate, line, languageId) {
     return isJsxTagName(candidate, line, languageId) || isJsxAttributeName(candidate, line, languageId);
@@ -308,6 +310,54 @@ function isDeclarationContext(candidate: { startCharacter: number; endCharacter:
   }
 
   return !/\bcase\s+$/.test(line.slice(0, candidate.startCharacter));
+}
+
+function isFunctionParameterName(candidate: { startCharacter: number; endCharacter: number }, line: string): boolean {
+  const openParen = line.lastIndexOf('(', candidate.startCharacter);
+  if (openParen < 0 || candidate.endCharacter <= openParen) {
+    return false;
+  }
+
+  const closeParen = findMatchingCloseParen(line, openParen);
+  if (closeParen < candidate.endCharacter) {
+    return false;
+  }
+
+  const beforeOpenParen = line.slice(0, openParen).trimEnd();
+  const afterCloseParen = line.slice(closeParen + 1).trimStart();
+  if (afterCloseParen.startsWith('=>')) {
+    return true;
+  }
+
+  const looksLikeFunctionDeclaration = /\bfunction(?:\s+[$_\p{L}][$_\p{L}\p{N}]*)?$/u.test(beforeOpenParen);
+  if (looksLikeFunctionDeclaration) {
+    return true;
+  }
+
+  const looksLikeMethodDeclaration = /[$_\p{L}][$_\p{L}\p{N}]*$/u.test(beforeOpenParen)
+    && (afterCloseParen.startsWith('{') || afterCloseParen.startsWith(':'));
+  return looksLikeMethodDeclaration;
+}
+
+function findMatchingCloseParen(line: string, openParen: number): number {
+  let depth = 0;
+  for (let character = openParen; character < line.length; character++) {
+    if (line[character] === '(') {
+      depth++;
+      continue;
+    }
+
+    if (line[character] !== ')') {
+      continue;
+    }
+
+    depth--;
+    if (depth === 0) {
+      return character;
+    }
+  }
+
+  return -1;
 }
 
 function nextNonWhitespaceCharacter(line: string, startCharacter: number): string | undefined {

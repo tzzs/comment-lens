@@ -29,6 +29,16 @@ test('typescript-family adapter owns declaration and jsx noise filtering behavio
   assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('OrderStatus', 6), 'const OrderStatus = value;'), true);
   assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('label', 6), 'const label = order.status;'), true);
   assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('paid', 5), 'case paid:'), false);
+  const jsFunctionLine = 'export function formatOrderStatus(status) {';
+  assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('status', jsFunctionLine.indexOf('status')), jsFunctionLine), true);
+  const methodLine = 'format(status) {';
+  assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('status', methodLine.indexOf('status')), methodLine), true);
+  const arrowLine = 'const formatOrderStatus = (status) => status;';
+  assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('status', arrowLine.indexOf('status')), arrowLine), true);
+  const callLine = 'const label = formatOrderStatus(status);';
+  assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('status', callLine.indexOf('status')), callLine), false);
+  const conditionLine = 'if (formatOrderStatus(status)) {';
+  assert.equal(typescriptFamilyLanguageAdapter.isDeclarationCandidate?.(candidate('status', conditionLine.indexOf('status')), conditionLine), false);
   assert.equal(typescriptFamilyLanguageAdapter.isNoisyCandidate?.(candidate('StatusBadge', 1), '<StatusBadge status={status} />'), true);
   assert.equal(typescriptFamilyLanguageAdapter.isNoisyCandidate?.(candidate('status', 13), '<StatusBadge status={status} />'), true);
 });
