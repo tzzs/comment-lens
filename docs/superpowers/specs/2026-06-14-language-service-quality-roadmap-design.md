@@ -14,7 +14,7 @@
 
 本设计文档用于 Codex 目标模式执行：明确需要修改的内容、验证方式和最终实现目标。
 
-> 2026-06-17 状态更新：优先级 A 已完成；优先级 B 已完成 formatter 质量规则、adapter-level 文档质量阈值、timeout/cache 保护和 source fallback 证据，document symbols / references 辅助过滤仍作为后续可选增强；优先级 C 已完成 PHP、Ruby、Kotlin、Swift、C/C++ 的接入和 fallback 第一轮验证。
+> 2026-06-17 状态更新：优先级 A 已完成；优先级 B 已完成 formatter 质量规则、adapter-level 文档质量阈值、timeout/cache 保护和 source fallback 证据，document symbols / references 辅助过滤仍作为后续可选增强；优先级 C 已完成 PHP、Ruby、Kotlin、Swift、C/C++ 的接入和 fallback 第一轮验证。C#、Ruby、Kotlin、Swift、C/C++ 已新增真实语言服务 fixture 和 evidence capture 模板，实际 hover/definition 截图或日志仍需在安装对应语言服务后补齐。
 
 ## 官方能力对标结论
 
@@ -136,16 +136,16 @@
 - Swift 已具备 `///` 和 block doc comment fallback，并进入 `experimental`。
 - C/C++ 已具备 Doxygen-style source fallback，并进入 `experimental`。
 
-剩余工作不是继续盲目加语言，而是为 experimental 语言补真实语言服务 integration 证据、截图或手工验证记录。
+剩余工作不是继续盲目加语言，而是使用 `test-fixtures/language-service/` 和 `docs/language-service-evidence.md` 为 experimental 语言补真实语言服务 integration 截图或手工验证记录。
 
 ### 需要修改的内容
 
 1. 补真实语言服务验证。
    - PHP：在安装 Intelephense 的环境中验证 hover 输出和 source fallback 行为。
    - Ruby：在 Ruby LSP 或 Solargraph 环境中验证 YARD/RDoc hover 与 fallback 互补关系。
-   - Kotlin：在 Gradle/Maven fixture 中验证 Kotlin language server 的 KDoc hover 输出。
-   - Swift：在 macOS/SwiftPM + SourceKit-LSP 环境中记录可重复验证条件。
-   - C/C++：在包含 compile commands 或 include path 配置的 fixture 中验证 C/C++ 扩展输出。
+   - Kotlin：在 Gradle fixture 中验证 Kotlin language server 的 KDoc hover 输出。
+   - Swift：在 SwiftPM + SourceKit-LSP fixture 中记录可重复验证条件。
+   - C/C++：在包含 include path 配置的 fixture 中验证 C/C++ 扩展输出。
 
 2. 补截图或手工验证记录。
    - 每个 experimental 语言至少保留一个可复现 fixture、截图或验证说明。
@@ -177,16 +177,16 @@
 | P1 | 文档质量控制 | 已完成第一轮；symbol/reference 辅助过滤后置 | formatter quality rules、adapter quality rules、timeout/cache 保护 |
 | P2 | PHP + Ruby | 已完成并更新等级 | PHP stable、Ruby experimental、fixtures、tests、docs |
 | P3 | Kotlin/Swift/C/C++ | 已完成第一轮 experimental fallback | Kotlin/Swift/C/C++ source fallback、依赖诊断、支持矩阵 |
-| P4 | 真实语言服务证据 | 当前下一步 | experimental 语言截图、手工验证记录、sample gallery 更新 |
+| P4 | 真实语言服务证据 | 进行中 | experimental 语言 fixture 和 capture 模板已建立；截图、手工验证记录、sample gallery 更新仍待补齐 |
 
 ## Codex 目标模式最终目标
 
 ```md
 基于 Comment Doc Lens 当前多语言 adapter 架构，推进下一阶段“语言服务质量证据”优化。
 
-当前健康检查、copyable diagnostics、formatter 质量规则、PHP stable 支持，以及 Ruby/Kotlin/Swift/C/C++ experimental fallback 已完成。下一步目标不再是继续注册更多 language id，而是补齐真实语言服务 integration 证据、截图或手工验证记录。
+当前健康检查、copyable diagnostics、formatter 质量规则、PHP stable 支持，以及 Ruby/Kotlin/Swift/C/C++ experimental fallback 已完成。C#、Ruby、Kotlin、Swift、C/C++ 已有最小真实语言服务 fixture 和 capture 模板。下一步目标不再是继续注册更多 language id，而是在安装对应语言服务后补齐真实 hover/definition 证据、截图或手工验证记录。
 
-优先级 A：为 C#、Ruby、Kotlin、Swift、C/C++ 各补一份真实语言服务验证记录，说明推荐扩展、项目环境、hover/definition 输出质量和 source fallback 兜底行为。
+优先级 A：按 `docs/language-service-evidence.md` 为 C#、Ruby、Kotlin、Swift、C/C++ 各补一份真实语言服务验证记录，说明推荐扩展、项目环境、hover/definition 输出质量和 source fallback 兜底行为。
 
 优先级 B：将验证证据同步到 README、sample gallery、language-support matrix 或 release notes。保持 support level 保守，未完成真实语言服务证据前不要把 experimental 语言升到 stable。
 

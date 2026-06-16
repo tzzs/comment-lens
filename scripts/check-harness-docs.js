@@ -8,6 +8,7 @@ const requiredFiles = [
   'AGENTS.md',
   'docs/README.md',
   'docs/language-support.md',
+  'docs/language-service-evidence.md',
   'docs/2026-06-16-comment-lens-optimization-plan.md',
   'docs/second-batch-language-evaluation.md',
   'docs/maintenance-metrics.md',

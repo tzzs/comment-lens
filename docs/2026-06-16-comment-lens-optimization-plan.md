@@ -58,6 +58,7 @@ Comment Doc Lens 的定位是：
 - Kotlin 已具备 KDoc source fallback。
 - Swift 已具备 `///` 与 block doc comment fallback。
 - C/C++ 已具备 Doxygen-style fallback，并在支持矩阵中保留 compile commands/include path 相关限制。
+- C#、Ruby、Kotlin、Swift、C/C++ 已补真实语言服务最小 workspace fixture、推荐扩展配置和 evidence capture 模板，详见 `test-fixtures/language-service/` 与 `docs/language-service-evidence.md`。
 
 ### P4：增长功能与样例资产
 
@@ -88,7 +89,7 @@ Comment Doc Lens 的定位是：
 
 ### 语言质量证据
 
-- 为 C#、Ruby、Kotlin、Swift、C/C++ 补真实语言服务 integration 证据、截图或手工验证记录。
+- 在已建立的 C#、Ruby、Kotlin、Swift、C/C++ fixture 中安装对应语言服务，捕获真实 `Show Language Status`、`Copy Diagnostics for Issue`、hover/definition 输出、截图或 Output Channel 记录。
 - 为 Python、Java、Rust、PHP 各补一张代表性截图或手工验证记录，支撑 `stable` 语言对外展示。
 - 发布后根据第一批诊断报告，调整 Output Channel 事件字段，让用户更容易解释 missing hints。
 
@@ -115,7 +116,7 @@ Comment Doc Lens 的定位是：
 
 ### 接下来 2-4 周
 
-1. 补 C#、Ruby、Kotlin、Swift、C/C++ 的真实语言服务 evidence。
+1. 使用 `docs/language-service-evidence.md` 的 capture checklist，补 C#、Ruby、Kotlin、Swift、C/C++ 的真实语言服务运行记录。
 2. 补 Python、Java、Rust、PHP 的代表性截图或手工验证记录。
 3. 根据真实 issue 调整 diagnostics 字段和 hidden hint explanation。
 

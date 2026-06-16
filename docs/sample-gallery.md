@@ -77,4 +77,6 @@ $label = formatStatus(PAID_STATUS); // Formats a PHP order status.
 
 These languages are currently `experimental`: Comment Doc Lens uses language-service hover first and source fallback when it can identify a nearby XML docs, YARD/RDoc, KDoc, Swift doc comment, or Doxygen comment.
 
+Use the reproducible workspaces under `test-fixtures/language-service/` when collecting screenshots for these languages. The current evidence gate, local environment snapshot, and capture checklist live in [Experimental language service evidence](language-service-evidence.md).
+
 Use `Comment Doc Lens: Diagnose Workspace` when a language does not show hints, then copy the report with `Comment Doc Lens: Copy Diagnostics for Issue`.

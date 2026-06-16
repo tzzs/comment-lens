@@ -23,13 +23,13 @@
 | Python | `python` | `stable` | Python 扩展和 Pylance | hover、definition hover、function/class docstring | 读取定义后的 `"""..."""`、`'''...'''` docstring；缺少语言服务时安静降级 | Python adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 docstring 读取；fixture 已存在 |
 | Java | `java` | `stable` | Extension Pack for Java 或等价 language server | hover、definition hover、Javadoc | 读取定义前 `/** ... */` Javadoc | Java adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 Javadoc 读取；fixture 已存在 |
 | Rust | `rust` | `stable` | rust-analyzer | hover、definition hover、`///`、`//!` 文档注释 | 读取定义前连续 `///` 或 `//!` 文档注释 | Rust adapter 单元测试覆盖 declaration 过滤、本地 definition fallback 和 doc comment 读取；fixture 已存在 |
-| C# | `csharp` | `experimental` | C# Dev Kit 或 OmniSharp | hover、definition hover、XML docs | 读取定义前连续 `///` XML doc comment | C# adapter 单元测试覆盖 XML docs source fallback；fixture 已存在 |
+| C# | `csharp` | `experimental` | C# Dev Kit 或 OmniSharp | hover、definition hover、XML docs | 读取定义前连续 `///` XML doc comment | C# adapter 单元测试覆盖 XML docs source fallback；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
 | PHP | `php` | `stable` | Intelephense | hover、definition hover、PHPDoc | 读取定义前 `/** ... */` PHPDoc | PHP adapter 单元测试覆盖 class、function、method、property、const declaration 过滤、本地 definition fallback 和 PHPDoc 读取；手动 fixture 已存在 |
-| Ruby | `ruby` | `experimental` | Ruby LSP | hover、definition hover、YARD/RDoc | 读取定义前连续 `#` YARD/RDoc comment | Ruby adapter 单元测试覆盖 YARD/RDoc fallback；手动 fixture 已存在 |
-| Kotlin | `kotlin` | `experimental` | Kotlin | hover、definition hover、KDoc | 读取定义前 `/** ... */` KDoc | Kotlin adapter 单元测试覆盖 KDoc fallback；手动 fixture 已存在 |
-| Swift | `swift` | `experimental` | Swift | hover、definition hover、doc comment | 读取定义前 `///` 或 `/** ... */` doc comment | Swift adapter 单元测试覆盖 doc comment fallback；手动 fixture 已存在 |
-| C | `c` | `experimental` | C/C++ | hover、definition hover、Doxygen | 读取定义前 `///`、`//!` 或 `/** ... */` Doxygen comment | C/C++ adapter 单元测试覆盖 `c`/`cpp` 双 language id、推荐扩展诊断和 Doxygen fallback |
-| C++ | `cpp` | `experimental` | C/C++ | hover、definition hover、Doxygen | 读取定义前 `///`、`//!` 或 `/** ... */` Doxygen comment | 与 C 共用 C/C++ adapter；手动 fixture 已存在 |
+| Ruby | `ruby` | `experimental` | Ruby LSP | hover、definition hover、YARD/RDoc | 读取定义前连续 `#` YARD/RDoc comment | Ruby adapter 单元测试覆盖 YARD/RDoc fallback；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
+| Kotlin | `kotlin` | `experimental` | Kotlin | hover、definition hover、KDoc | 读取定义前 `/** ... */` KDoc | Kotlin adapter 单元测试覆盖 KDoc fallback；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
+| Swift | `swift` | `experimental` | Swift | hover、definition hover、doc comment | 读取定义前 `///` 或 `/** ... */` doc comment | Swift adapter 单元测试覆盖 doc comment fallback；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
+| C | `c` | `experimental` | C/C++ | hover、definition hover、Doxygen | 读取定义前 `///`、`//!` 或 `/** ... */` Doxygen comment | C/C++ adapter 单元测试覆盖 `c`/`cpp` 双 language id、推荐扩展诊断和 Doxygen fallback；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
+| C++ | `cpp` | `experimental` | C/C++ | hover、definition hover、Doxygen | 读取定义前 `///`、`//!` 或 `/** ... */` Doxygen comment | 与 C 共用 C/C++ adapter；真实语言服务 fixture 已建立，capture 状态见 [language-service-evidence.md](language-service-evidence.md) |
 
 ## 语言服务健康检查
 
@@ -59,6 +59,18 @@ Comment Doc Lens 现在在 formatter、resolver 和 hint builder 三层执行文
 - C#、Ruby、Kotlin、Swift 和 C/C++ adapter 默认使用 `minimumWords: 2`，用于减少 bare type name、signature-like hover 等低信号提示；这些语言同时具备 source fallback，但仍保持 `experimental`，直到真实语言服务 integration 证据补齐。
 
 新增语言时，如果 hover 输出常出现类型名、签名或单词摘要，应在 adapter 上声明 `documentationQuality.minimumWords`，并用单元测试覆盖该语言的噪音样例。
+
+## 真实语言服务证据
+
+C#、Ruby、Kotlin、Swift 和 C/C++ 的真实语言服务验证入口统一在 [Experimental language service evidence](language-service-evidence.md)。该文档记录：
+
+- 最小 workspace fixture 路径；
+- 推荐扩展和工具链要求；
+- 当前本机可验证条件；
+- `Show Language Status` 和 `Copy Diagnostics for Issue` 的 capture 模板；
+- hover、definition 和 source fallback 的验证门槛。
+
+当前这些语言不因 source fallback 完成而升级为 `stable`。只有真实语言服务 capture、fallback 测试、噪音过滤、截图或 Output Channel 记录、支持矩阵和 CI 全部闭环后，才进入稳定等级评估。
 
 ## 第一批扩展语言
 

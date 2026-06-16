@@ -165,18 +165,22 @@ test('package localization includes English defaults and Simplified Chinese tran
   assert.match(chinese['commentDocLens.configuration.enabled.description'], /启用/);
 });
 
-test('sample gallery and positioning article are packaged', () => {
+test('sample gallery, evidence doc, and positioning article are packaged', () => {
   const packageJson = readPackageJson() as PackageJson & { files: string[] };
 
   assert.equal(packageJson.files.includes('docs/**/*.md'), true);
   assert.equal(existsSync(join(process.cwd(), 'docs/sample-gallery.md')), true);
+  assert.equal(existsSync(join(process.cwd(), 'docs/language-service-evidence.md')), true);
   assert.equal(existsSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md')), true);
 
   const gallery = readFileSync(join(process.cwd(), 'docs/sample-gallery.md'), 'utf8');
+  const evidence = readFileSync(join(process.cwd(), 'docs/language-service-evidence.md'), 'utf8');
   const article = readFileSync(join(process.cwd(), 'docs/articles/inline-docs-without-generating-comments.md'), 'utf8');
   assert.match(gallery, /Read existing docs where symbols are used/);
   assert.match(gallery, /Go/);
   assert.match(gallery, /TypeScript/);
+  assert.match(evidence, /test-fixtures\/language-service\/csharp/);
+  assert.match(evidence, /Do not mark a language as `stable` from source fallback alone/);
   assert.match(article, /without generating comments/i);
   assert.match(article, /does not call an LLM/i);
 });
