@@ -63,7 +63,7 @@
 
 下一轮不要从本文件的旧步骤继续，而应从以下事项中选：
 
-1. 发布前重新核对 Marketplace/Open VSX 当前包入口、版本、下载和历史入口指向。
+1. 发布前重新核对 Marketplace/Open VSX 当前包入口、版本、下载、extension id、release tag 和 GitHub release 是否统一为 `comment-doc-lens`。
 2. 补真实截图/GIF，并同步 README、Marketplace、Open VSX、GitHub Release。
 3. 为 C#、Ruby、Kotlin、Swift、C/C++ 补真实语言服务 integration 证据。
 4. 在 GUI-capable 环境复跑 `npm run test:integration`，并把结果记录到 release checklist。

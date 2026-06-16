@@ -23,7 +23,7 @@ Use this checklist before every release PR and again after Marketplace/Open VSX 
 - [ ] Record Marketplace Ratings & Reviews.
 - [ ] Confirm the Open VSX API returns the new version.
 - [ ] Record Open VSX downloads.
-- [ ] Check whether legacy marketplace entries point users to `comment-doc-lens`.
+- [ ] Confirm Marketplace, Open VSX, GitHub release, release tag, README links, and repository URL all point to `comment-doc-lens` / `Comment Doc Lens`.
 
 ## Post-Release Watch
 

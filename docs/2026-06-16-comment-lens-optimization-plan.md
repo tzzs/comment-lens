@@ -1,7 +1,7 @@
 # Comment Doc Lens 产品与分发优化方案
 
 > 本方案最初基于 2026-06-16 的产品、竞品、Marketplace/Open VSX 和本地仓库分析整理。
-> 2026-06-17 更新：主线已恢复 `comment-doc-lens` / `Comment Doc Lens` 品牌，PR #21 已完成 P2-P5 的实现、验证、冲突解决和 CI 检查。文件名保留 `comment-lens` 历史名称，正文以当前仓库事实为准。
+> 2026-06-17 更新：主线已恢复 `comment-doc-lens` / `Comment Doc Lens` 品牌，PR #21 已完成 P2-P5 的实现、验证、冲突解决和 CI 检查。当前不再按“新包/旧包迁移”处理；本地包名、展示名、命令命名空间、release tag 前缀和发布链都应保持 `Comment Doc Lens` / `comment-doc-lens` 一致。文件名保留 `comment-lens` 历史名称，正文以当前仓库事实为准。
 
 ## 核心定位
 
@@ -44,17 +44,17 @@ Comment Doc Lens 应继续坚持：
   - `Comment Doc Lens: Copy Diagnostics for Issue`
   - `Comment Doc Lens: Explain Hidden Hint`
   - `Comment Doc Lens: Open Sample Gallery`
-- 发布链仍覆盖 Marketplace/Open VSX，但外部商店数据、历史包入口和截图/GIF 需要发布前再次核对。
+- 发布链仍覆盖 Marketplace/Open VSX；发布前需要重新核对商店页、Open VSX、GitHub release、仓库 URL、release tag 和下载数据是否都指向同一 `comment-doc-lens` 入口。
 
 ## P0-P5 状态
 
 | 优先级 | 当前状态 | 已完成 | 仍需跟进 |
 | --- | --- | --- | --- |
-| P0：校准发布事实与包入口 | 部分完成 | 本地包名、release-please、README、发布 workflow 已回到 `comment-doc-lens` | 发布前重新核对 Marketplace/Open VSX 实际版本、下载、旧入口指向 |
-| P1：品牌收口与 Marketplace 转化 | 部分完成 | README/README_CN、social preview、关键词方向、隐私边界已更新到 Comment Doc Lens | 真实 GIF/截图、GitHub topics、issue templates、商店页文案和历史入口 FAQ |
+| P0：校准发布事实与包入口 | 部分完成 | 本地包名、release-please、README、发布 workflow 已回到 `comment-doc-lens` | 发布前重新核对 Marketplace/Open VSX/GitHub release 的真实版本、下载和入口一致性 |
+| P1：品牌收口与 Marketplace 转化 | 部分完成 | README/README_CN、social preview、关键词方向、隐私边界已更新到 Comment Doc Lens；不再需要新旧包迁移叙事 | 真实 GIF/截图、GitHub topics、issue templates、商店页文案和公开入口一致性检查 |
 | P2：官方级体验细节 | 完成 | lazy `resolveInlayHint`、Output Channel、workspace diagnosis、copyable diagnostics、hidden hint explanation、`package.nls.zh-cn.json` | 发布后观察诊断报告是否足够解释 missing hints |
 | P3：语言质量升级 | 完成第一轮 | Python/Java/Rust/PHP 已升 stable；C#/Ruby/Kotlin/Swift/C/C++ 已具备 source fallback 并升 experimental | 为 experimental 语言补真实语言服务 integration 证据和截图 |
-| P4：增长功能与样例资产 | 部分完成 | `Open Sample Gallery`、sample gallery 文档、技术文章已加入包内 docs | 多语言真实截图/GIF、Release/Marketplace/Open VSX 复用素材、旧入口 FAQ |
+| P4：增长功能与样例资产 | 部分完成 | `Open Sample Gallery`、sample gallery 文档、技术文章已加入包内 docs | 多语言真实截图/GIF、Release/Marketplace/Open VSX 复用素材、公开入口一致性说明 |
 | P5：维护机制与指标 | 完成基础 | `docs/maintenance-metrics.md` 与 `docs/release-quality-checklist.md` 已建立节奏、指标和发布检查 | 发布后按月记录指标、按季度推进语言升级 |
 
 ## P2 已完成项
@@ -91,9 +91,9 @@ Comment Doc Lens 应继续坚持：
 
 ### 近期 1 周
 
-- 发布前重新核对 Marketplace/Open VSX 当前包入口、版本、下载和历史入口状态。
+- 发布前重新核对 Marketplace/Open VSX 当前包入口、版本、下载、extension id、release tag 和 GitHub release 是否一致。
 - 补 GitHub topics 与 issue templates：bug report、language support request、missing hint diagnostics。
-- 为旧入口关系写短 FAQ：当前主入口、历史包名、是否需要卸载旧包。
+- 在 README/商店页补一句公开入口说明：当前主入口统一为 `tanzz.comment-doc-lens` / `comment-doc-lens`，不再区分新老包迁移路径。
 - 补至少一张真实 Before/After 截图或短 GIF，并同步 README、Marketplace、Open VSX。
 
 ### 接下来 2-4 周
@@ -108,11 +108,19 @@ Comment Doc Lens 应继续坚持：
 - 从 diagnostics 数据中选择下一个语言晋级或噪音过滤目标。
 - 评估是否需要 document symbols / references 作为第二阶段质量增强；只有在现有 adapter/filter 不足时再引入。
 
+## 仍需继续优化
+
+1. **公开入口一致性验证**：核对 VS Code Marketplace、Open VSX、GitHub release、release-please tag、README 链接和仓库 URL 是否全部使用 `Comment Doc Lens` / `comment-doc-lens`。这替代原先“新旧包迁移”的待办。
+2. **真实视觉资产**：补一张 Before/After 截图或短 GIF，并在 README、Marketplace、Open VSX 和 release notes 中复用。
+3. **Issue 模板与诊断闭环**：新增 missing hint / language support issue templates，引导用户粘贴 `Comment Doc Lens: Copy Diagnostics for Issue` 输出。
+4. **Experimental 语言证据**：为 C#、Ruby、Kotlin、Swift、C/C++ 补真实语言服务 integration 证据、截图或手工验证记录。
+5. **发布后指标记录**：发布后记录 Marketplace installs/downloads、Open VSX downloads、GitHub issues、diagnostics report 使用率，并按 `docs/maintenance-metrics.md` 做月度质量节奏。
+
 ## 风险与处理
 
 | 风险 | 影响 | 处理 |
 | --- | --- | --- |
-| 历史包名和当前包名认知混乱 | 影响搜索、安装和 issue 反馈 | README、release note、商店文案和 FAQ 统一说明当前主入口 |
+| 历史计划和当前包名认知混乱 | 影响 agent 接手、搜索、安装和 issue 反馈 | README、docs index、release note 和商店文案统一说明当前入口是 `comment-doc-lens` |
 | 语言服务差异导致 hint 不稳定 | 用户认为扩展坏了 | Output Channel、workspace diagnosis、support matrix 和 issue diagnostics 解释依赖状态 |
 | fallback 误读无关注释 | 噪音增加，降低信任 | 每种语言增加 declaration 过滤、注释距离限制、signature-only 过滤和 fixture |
 | 惰性解析实现不当导致体验退化 | tooltip/full docs 慢或不一致 | 默认 summary 与 resolve details 分离，增加 timeout/cache 统计和回归测试 |

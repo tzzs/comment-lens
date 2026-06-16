@@ -17,7 +17,7 @@ Track these after each release:
 - Marketplace Ratings & Reviews.
 - Open VSX downloads.
 - GitHub stars, forks, issues, and support requests.
-- Legacy package downloads versus current `comment-doc-lens` downloads.
+- Marketplace/Open VSX downloads for the current `comment-doc-lens` entry, plus any unexpected traffic on stale aliases or historical links.
 
 ## Quality Metrics
 
