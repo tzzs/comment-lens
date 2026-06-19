@@ -1,0 +1,47 @@
+name: Performance or timeout report
+description: Report slow hint resolution, timeouts, or large-workspace behavior.
+title: "perf: "
+labels:
+  - performance
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please run `Comment Doc Lens: Diagnose Workspace` and `Comment Doc Lens: Copy Diagnostics for Issue` before filing performance reports.
+  - type: input
+    id: language-id
+    attributes:
+      label: Language id
+      placeholder: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: workspace-shape
+    attributes:
+      label: Workspace shape
+      description: Approximate file count, language mix, generated files, and project size.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      description: Paste `Comment Doc Lens: Copy Diagnostics for Issue`.
+      render: markdown
+    validations:
+      required: true
+  - type: input
+    id: timeout-setting
+    attributes:
+      label: Timeout and cache settings
+      placeholder: resolveTimeoutMs=750, maxCacheEntries=1000
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: Include lag, timeout messages, or editor behavior.
+    validations:
+      required: true

@@ -86,6 +86,8 @@ For `missingDependency`, install or enable the listed recommended extension. For
 
 `sourceFallback=true` means the adapter can try to recover nearby source comments when hover output is missing. It does not replace the recommended language extension: a status such as `missingDependency` with `sourceFallback=true` is expected when Java, C#, or another external language service is not installed. For real projects, install the listed extension and toolchain; for manual same-file fixtures, make sure you are on a call-site line, refresh Comment Doc Lens, and use the latest installed VSIX.
 
+Before reporting a missing hint, run `Comment Doc Lens: Show Language Status`, `Comment Doc Lens: Explain Hidden Hint`, and `Comment Doc Lens: Copy Diagnostics for Issue`. The missing-hint issue template asks for these outputs so maintainers can distinguish configuration, language-service, fallback, and timeout problems without collecting source code.
+
 ## Settings
 
 | Setting | Purpose |
