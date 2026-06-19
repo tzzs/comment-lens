@@ -1,0 +1,69 @@
+name: Missing inline documentation hint
+description: Report a symbol reference that should show a Comment Doc Lens hint but does not.
+title: "fix: missing hint for "
+labels:
+  - missing-hint
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Comment Doc Lens. Before reporting a missing hint, run these commands from the Command Palette and paste their output below:
+
+        - `Comment Doc Lens: Show Language Status`
+        - `Comment Doc Lens: Explain Hidden Hint`
+        - `Comment Doc Lens: Copy Diagnostics for Issue`
+  - type: input
+    id: language-id
+    attributes:
+      label: Language id
+      description: The VS Code language id shown in the lower-right status bar or diagnostics output.
+      placeholder: go
+    validations:
+      required: true
+  - type: textarea
+    id: language-status
+    attributes:
+      label: Comment Doc Lens: Show Language Status
+      description: Paste the full language status message.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: hidden-hint
+    attributes:
+      label: Comment Doc Lens: Explain Hidden Hint
+      description: Paste the hidden hint explanation for the line where you expected a hint.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Comment Doc Lens: Copy Diagnostics for Issue
+      description: Paste the generated Markdown diagnostics report.
+      render: markdown
+    validations:
+      required: true
+  - type: input
+    id: language-extension-state
+    attributes:
+      label: Language extension and toolchain state
+      description: Paste the dependency line from Show Language Status, or say which language extension/toolchain is installed and whether indexing is ready.
+      placeholder: golang.Go installed; gopls ready
+    validations:
+      required: true
+  - type: textarea
+    id: minimal-reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide a small code snippet, fixture path, or repository link that reproduces the missing hint.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected vs actual behavior
+      description: Describe the expected documentation summary and what Comment Doc Lens showed instead.
+    validations:
+      required: true

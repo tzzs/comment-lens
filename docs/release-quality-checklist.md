@@ -14,6 +14,7 @@ Use this checklist before every release PR and again after Marketplace/Open VSX 
 - [ ] Confirm `package.nls.json` and `package.nls.zh-cn.json` include new commands/settings.
 - [ ] Confirm `package.json` keywords and categories still match the positioning.
 - [ ] Confirm privacy wording still says local-only, no upload, no LLM, no generated comments.
+- [ ] Confirm issue templates still ask for `Show Language Status`, `Explain Hidden Hint`, and `Copy Diagnostics for Issue` output for missing hint reports.
 - [ ] Confirm the PR title uses Conventional Commit format.
 - [ ] Confirm the final squash or merge title will not use a `[codex]` prefix, so Release Please can parse the commit on `main`.
 
@@ -31,6 +32,6 @@ Use this checklist before every release PR and again after Marketplace/Open VSX 
 ## Post-Release Watch
 
 - [ ] Watch issues for missing hints in newly promoted languages.
-- [ ] Ask users to attach `Show Language Status`, `Explain Hidden Hint`, and `Copy Diagnostics for Issue` output when language-service state is unclear.
+- [ ] Ask users to attach `Show Language Status`, `Explain Hidden Hint`, and `Copy Diagnostics for Issue` output when language-service state is unclear, and route missing hint reports through the issue templates.
 - [ ] Check Output Channel reports for timeouts, missing dependencies, and degraded language-service states.
 - [ ] If registry UI looks stale, verify API responses before diagnosing a failed publish.

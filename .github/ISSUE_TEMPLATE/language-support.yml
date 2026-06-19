@@ -1,0 +1,28 @@
+name: Language support request
+description: Request or improve Comment Doc Lens support for a language.
+title: "feat: support language "
+labels:
+  - language-support
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for new languages or language-quality upgrades. Comment Doc Lens only reads existing documentation and language-service output.
+
+        Maintainers assign support levels from tests, documentation, real language-service evidence, and CI results. Maintainers create fixtures and choose supported dependencies. Maintainers define validation scenarios. Please provide the language id and documentation style; do not request `stable` or `experimental` directly.
+  - type: input
+    id: language-id
+    attributes:
+      label: Language id
+      description: The VS Code language id to support or improve.
+      placeholder: php
+    validations:
+      required: true
+  - type: textarea
+    id: documentation-comment
+    attributes:
+      label: Documentation comment examples
+      description: Show the common documentation comment, docstring, or language-service hover text for this language.
+      render: text
+    validations:
+      required: true

@@ -185,6 +185,65 @@ test('sample gallery, evidence doc, and positioning article are packaged', () =>
   assert.match(article, /does not call an LLM/i);
 });
 
+test('issue templates collect missing hint diagnostics', () => {
+  const requiredTemplates = [
+    '.github/ISSUE_TEMPLATE/missing-hint.yml',
+    '.github/ISSUE_TEMPLATE/language-support.yml',
+    '.github/ISSUE_TEMPLATE/bug-report.yml',
+    '.github/ISSUE_TEMPLATE/performance-timeout.yml'
+  ];
+
+  for (const template of requiredTemplates) {
+    assert.equal(existsSync(join(process.cwd(), template)), true, template);
+  }
+
+  const missingHint = readFileSync(join(process.cwd(), '.github/ISSUE_TEMPLATE/missing-hint.yml'), 'utf8');
+  assert.match(missingHint, /Comment Doc Lens: Show Language Status/);
+  assert.match(missingHint, /Comment Doc Lens: Explain Hidden Hint/);
+  assert.match(missingHint, /Comment Doc Lens: Copy Diagnostics for Issue/);
+  assert.match(missingHint, /language id/i);
+  assert.match(missingHint, /language extension and toolchain state/i);
+  assert.match(missingHint, /dependency line from Show Language Status/i);
+  assert.match(missingHint, /minimal reproduction/i);
+
+  const languageSupport = readFileSync(join(process.cwd(), '.github/ISSUE_TEMPLATE/language-support.yml'), 'utf8');
+  assert.match(languageSupport, /language id/i);
+  assert.match(languageSupport, /documentation comment/i);
+  assert.match(languageSupport, /Maintainers create fixtures/i);
+  assert.match(languageSupport, /choose supported dependencies/i);
+  assert.match(languageSupport, /Maintainers define validation scenarios/i);
+  assert.match(languageSupport, /Maintainers assign support levels/i);
+  assert.doesNotMatch(languageSupport, /id: recommended-extension/);
+  assert.doesNotMatch(languageSupport, /label: Recommended extension/);
+  assert.doesNotMatch(languageSupport, /id: language-extension/);
+  assert.doesNotMatch(languageSupport, /Language extension in use/);
+  assert.doesNotMatch(languageSupport, /id: fixture/);
+  assert.doesNotMatch(languageSupport, /label: Minimal fixture/);
+  assert.doesNotMatch(languageSupport, /id: code-pattern/);
+  assert.doesNotMatch(languageSupport, /Code pattern to support/);
+  assert.doesNotMatch(languageSupport, /Primary use case/);
+  assert.doesNotMatch(languageSupport, /id: support-level/);
+  assert.doesNotMatch(languageSupport, /Requested support level/);
+  assert.doesNotMatch(languageSupport, /Stable after evidence/);
+});
+
+test('readmes and release checklist route missing hint reports through diagnostics', () => {
+  const englishReadme = readFileSync(join(process.cwd(), 'README.md'), 'utf8');
+  const chineseReadme = readFileSync(join(process.cwd(), 'README_CN.md'), 'utf8');
+  const releaseChecklist = readFileSync(join(process.cwd(), 'docs/release-quality-checklist.md'), 'utf8');
+
+  assert.match(englishReadme, /Before reporting a missing hint/);
+  assert.match(englishReadme, /Show Language Status/);
+  assert.match(englishReadme, /Explain Hidden Hint/);
+  assert.match(englishReadme, /Copy Diagnostics for Issue/);
+  assert.match(chineseReadme, /反馈缺失提示前/);
+  assert.match(chineseReadme, /Show Language Status/);
+  assert.match(chineseReadme, /Explain Hidden Hint/);
+  assert.match(chineseReadme, /Copy Diagnostics for Issue/);
+  assert.match(releaseChecklist, /issue templates/);
+  assert.match(releaseChecklist, /missing hint/);
+});
+
 test('readmes keep user-facing language support levels concise', () => {
   const englishReadme = readFileSync(join(process.cwd(), 'README.md'), 'utf8');
   const chineseReadme = readFileSync(join(process.cwd(), 'README_CN.md'), 'utf8');

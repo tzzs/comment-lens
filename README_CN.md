@@ -86,6 +86,8 @@ Comment Doc Lens 会扫描当前可见的标识符，调用 VS Code 当前语言
 
 `sourceFallback=true` 表示 adapter 可以在 hover 缺失时尝试读取定义附近的源码注释，但它不能替代推荐语言扩展。Java、C# 或其他外部语言服务未安装时，`missingDependency` 加 `sourceFallback=true` 是预期状态。真实项目请安装提示中的扩展和工具链；手工同文件 fixture 请确认光标在调用点、运行 `Comment Doc Lens: Refresh`，并使用最新安装的 VSIX。
 
+反馈缺失提示前，请先运行 `Comment Doc Lens: Show Language Status`、`Comment Doc Lens: Explain Hidden Hint` 和 `Comment Doc Lens: Copy Diagnostics for Issue`。缺失提示 issue 模板会要求粘贴这些输出，方便维护者区分配置、语言服务、fallback 和超时问题，同时不需要收集源码。
+
 ## 配置项
 
 | 配置 | 用途 |
