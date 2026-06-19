@@ -13,7 +13,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/tzzs/comment-doc-lens">GitHub Repository</a>
+  <a href="https://github.com/tzzs/comment-doc-lens">
+    <img alt="GitHub Repository" src="https://img.shields.io/badge/GitHub-Repository-181717?logo=github">
+  </a>
+  <a href="https://github.com/tzzs/comment-doc-lens/issues">
+    <img alt="Report Issue" src="https://img.shields.io/badge/Report-Issue-0969da?logo=github">
+  </a>
 </p>
 
 <p align="center">
