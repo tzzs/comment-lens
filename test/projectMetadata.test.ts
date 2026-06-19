@@ -244,6 +244,24 @@ test('readmes and release checklist route missing hint reports through diagnosti
   assert.match(releaseChecklist, /missing hint/);
 });
 
+test('language service evidence keeps capture status conservative', () => {
+  const evidence = readFileSync(join(process.cwd(), 'docs/language-service-evidence.md'), 'utf8');
+
+  assert.match(evidence, /Current local capture status/i);
+  assert.match(evidence, /Capture blocked by missing recommended extension/i);
+  assert.match(evidence, /Do not mark a language as `stable` from source fallback alone/);
+  assert.match(evidence, /C#.*pending real language-service capture/s);
+  assert.match(evidence, /Ruby.*pending real language-service capture/s);
+  assert.match(evidence, /Kotlin.*pending real language-service capture/s);
+  assert.match(evidence, /Swift.*pending real language-service capture/s);
+  assert.match(evidence, /C\/C\+\+.*pending real language-service capture/s);
+  assert.doesNotMatch(evidence, /C#\s*\|\s*`?stable/i);
+  assert.doesNotMatch(evidence, /Ruby\s*\|\s*`?stable/i);
+  assert.doesNotMatch(evidence, /Kotlin\s*\|\s*`?stable/i);
+  assert.doesNotMatch(evidence, /Swift\s*\|\s*`?stable/i);
+  assert.doesNotMatch(evidence, /C\/C\+\+\s*\|\s*`?stable/i);
+});
+
 test('readmes keep user-facing language support levels concise', () => {
   const englishReadme = readFileSync(join(process.cwd(), 'README.md'), 'utf8');
   const chineseReadme = readFileSync(join(process.cwd(), 'README_CN.md'), 'utf8');

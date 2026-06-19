@@ -1,6 +1,6 @@
 # Experimental Language Service Evidence
 
-> Updated: 2026-06-17. This document records reproducible evidence paths for the experimental C#, Ruby, Kotlin, Swift, and C/C++ adapters. Keep the support level conservative until every language has a completed real language-service capture.
+> Updated: 2026-06-20. This document records reproducible evidence paths for the experimental C#, Ruby, Kotlin, Swift, and C/C++ adapters. Keep the support level conservative until every language has a completed real language-service capture.
 
 ## Evidence Policy
 
@@ -22,17 +22,29 @@ This snapshot explains what could and could not be verified in the current local
 
 | Check | Result |
 | --- | --- |
-| Date | 2026-06-17 |
+| Date | 2026-06-20 |
 | VS Code CLI | `code --list-extensions --show-versions` returned installed extensions, but also logged an `EPERM` failure while trying to create VS Code logs under the user Library path in the sandboxed session |
-| Installed relevant extensions | `swiftlang.swift-vscode@2.16.6` only |
-| Missing relevant extensions | `ms-dotnettools.csdevkit`, `shopify.ruby-lsp`, `fwcd.kotlin`, `ms-vscode.cpptools` |
+| Installed relevant extensions | `golang.go@0.54.0`, `ms-python.python@2026.4.0`, `swiftlang.swift-vscode@2.16.6`, `tanzz.comment-doc-lens@0.5.0` |
+| Missing relevant extensions | `ms-dotnettools.csdevkit`, `shopify.ruby-lsp`, `fwcd.kotlin`, `ms-vscode.cpptools`, `bmewburn.vscode-intelephense-client`, `ms-python.vscode-pylance` |
 | `.NET SDK` | Missing: `dotnet` command not found |
-| Ruby | `ruby 2.6.10p210`; `ruby-lsp` gem not installed |
+| Ruby | `ruby 2.6.10p210`; `bundle --version` reports Bundler `1.17.2`; Ruby LSP VS Code extension is missing |
 | Kotlin / Gradle | Missing: `kotlinc` and `gradle` commands not found |
-| Swift | Present: Apple Swift `6.3.2`; `sourcekit-lsp` exists at `/usr/bin/sourcekit-lsp`, but VS Code language-status capture was not run in this turn |
+| Swift | Present: Apple Swift `6.3.2`; `sourcekit-lsp` exists, but `sourcekit-lsp --version` is not supported and VS Code language-status capture was not run in this turn |
 | C/C++ compiler | Present: Apple clang `21.0.0`; C/C++ VS Code extension missing |
 
-Current conclusion: this commit adds reproducible fixtures and evidence capture instructions. It does not claim C#, Ruby, Kotlin, Swift, or C/C++ are fully language-service verified on this machine.
+Current conclusion: this snapshot refreshes reproducible fixture and dependency status. It does not claim C#, Ruby, Kotlin, Swift, C/C++, PHP, or Python are newly language-service verified on this machine.
+
+## Current local capture status
+
+| Language | Current local capture status | Next action |
+| --- | --- | --- |
+| C# | Capture blocked by missing recommended extension `ms-dotnettools.csdevkit` and missing `.NET SDK` (`dotnet` command not found). | Install C# Dev Kit or OmniSharp plus .NET SDK, then rerun the C# fixture capture. |
+| Ruby | Capture blocked by missing recommended extension `shopify.ruby-lsp`; Ruby and Bundler are present but Ruby LSP was not launched. | Install Ruby LSP from the fixture Gemfile and VS Code extension, then capture hover/definition output. |
+| Kotlin | Capture blocked by missing recommended extension `fwcd.kotlin` and missing `kotlinc` / `gradle`. | Install Kotlin language server tooling, Gradle, and JDK support before capture. |
+| Swift | Capture pending: recommended extension and Swift toolchain are present, syntax fixture passes, but VS Code status/screenshot capture was not run. | Open `test-fixtures/language-service/swift` in Extension Development Host and capture SourceKit-LSP output. |
+| C/C++ | Capture blocked by missing recommended extension `ms-vscode.cpptools`; clang syntax fixture passes. | Install C/C++ extension and rerun the fixture with indexing ready. |
+| PHP | Stable adapter remains covered by tests and fallback; real Intelephense capture is blocked by missing recommended extension `bmewburn.vscode-intelephense-client`. | Install Intelephense and capture a PHP stable-language example before using screenshots as promotional evidence. |
+| Python | Stable adapter remains covered by tests and fallback; full Pylance capture is blocked by missing recommended extension `ms-python.vscode-pylance`. | Install Pylance and capture a Python stable-language example. |
 
 ## Fixture Sanity Checks
 
@@ -40,9 +52,9 @@ These checks validate fixture shape where the local toolchain is available. They
 
 | Fixture | Command | Result |
 | --- | --- | --- |
-| Swift source | `swiftc -parse Sources/CommentDocLensSwift/OrderPresenter.swift` from `test-fixtures/language-service/swift` | Passed |
+| Swift source | `swiftc -parse Sources/CommentDocLensSwift/OrderPresenter.swift` from `test-fixtures/language-service/swift` | Passed on 2026-06-20 |
 | SwiftPM package | `swift build` from `test-fixtures/language-service/swift` | Blocked in this sandbox by SwiftPM/clang module-cache and `sandbox-exec` permissions; rerun in a normal local shell when capturing SourceKit-LSP evidence |
-| C/C++ source | `clang++ -std=c++20 -fsyntax-only order.cpp` from `test-fixtures/language-service/cpp` | Passed |
+| C/C++ source | `clang++ -std=c++20 -fsyntax-only order.cpp` from `test-fixtures/language-service/cpp` | Passed on 2026-06-20 |
 | C# fixture | `dotnet build` | Not run here because `dotnet` is not installed |
 | Ruby fixture | `bundle install` / Ruby LSP launch | Not run here because Ruby LSP is not installed |
 | Kotlin fixture | `gradle build` | Not run here because Gradle/Kotlin CLI is not installed |
@@ -54,7 +66,7 @@ These checks validate fixture shape where the local toolchain is available. They
 | C# | `test-fixtures/language-service/csharp` | `ms-dotnettools.csdevkit` | .NET SDK 8+ | Fixture ready; local language-service capture blocked by missing extension and `dotnet` |
 | Ruby | `test-fixtures/language-service/ruby` | `shopify.ruby-lsp` | Ruby with `ruby-lsp` from `Gemfile` | Fixture ready; local language-service capture blocked by missing extension and gem |
 | Kotlin | `test-fixtures/language-service/kotlin` | `fwcd.kotlin` | Gradle and JDK 21+ | Fixture ready; local language-service capture blocked by missing extension and Gradle/Kotlin CLI |
-| Swift | `test-fixtures/language-service/swift` | `swiftlang.swift-vscode` | SwiftPM and SourceKit-LSP | Fixture ready; local extension and Swift toolchain present; VS Code status/screenshot capture still pending |
+| Swift | `test-fixtures/language-service/swift` | `swiftlang.swift-vscode` | SwiftPM and SourceKit-LSP | Fixture ready; local extension and Swift toolchain present; pending real language-service capture in VS Code |
 | C/C++ | `test-fixtures/language-service/cpp` | `ms-vscode.cpptools` | clang and C/C++ extension indexing | Fixture ready; local language-service capture blocked by missing extension |
 
 ## Capture Checklist
@@ -161,7 +173,7 @@ Expected documentation source:
 - Primary: SourceKit-LSP hover/definition for Swift doc comments.
 - Fallback: local source fallback reads leading `///` or `/** ... */` doc comments.
 
-Current status: fixture ready; Swift extension and Swift toolchain are present locally, but VS Code status/screenshot capture is still pending.
+Current status: pending real language-service capture; fixture ready, Swift extension and Swift toolchain are present locally, but VS Code status/screenshot capture is still pending.
 
 Required capture fields:
 
