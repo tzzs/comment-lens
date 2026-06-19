@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/tzzs/comment-doc-lens">GitHub Repository</a>
+</p>
+
+<p align="center">
   <img src="assets/social-preview.png" alt="Comment Doc Lens preview showing inline symbol documentation in VS Code">
 </p>
 

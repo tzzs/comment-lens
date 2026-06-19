@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/tzzs/comment-doc-lens">GitHub 仓库</a>
+</p>
+
+<p align="center">
   <img src="assets/social-preview.png" alt="Comment Doc Lens 在 VS Code 中展示内联符号文档的预览图">
 </p>
 
