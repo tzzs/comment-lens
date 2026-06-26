@@ -74,6 +74,36 @@ test('keeps documentation while dropping vscode hover command links', () => {
   assert.equal(result?.fullText, 'Formats the order status label.');
 });
 
+test('ignores gopls package documentation links without documentation', () => {
+  const result = formatDocumentation(
+    [
+      '```go',
+      'func (OrderPresenter) DisplayLabel(status string) string',
+      '```',
+      '[`main.OrderPresenter.DisplayLabel` on pkg.go.dev](https://pkg.go.dev/example.com/orders#OrderPresenter.DisplayLabel)'
+    ],
+    80
+  );
+
+  assert.equal(result, undefined);
+});
+
+test('keeps documentation while dropping gopls package documentation links', () => {
+  const result = formatDocumentation(
+    [
+      '```go',
+      'func (OrderPresenter) DisplayLabel(status string) string',
+      '```',
+      'DisplayLabel returns the display label in Go.',
+      '[`main.OrderPresenter.DisplayLabel` on pkg.go.dev](https://pkg.go.dev/example.com/orders#OrderPresenter.DisplayLabel)'
+    ],
+    80
+  );
+
+  assert.equal(result?.summary, 'DisplayLabel returns the display label in Go.');
+  assert.equal(result?.fullText, 'DisplayLabel returns the display label in Go.');
+});
+
 test('ignores vscode hover action text without documentation', () => {
   const result = formatDocumentation(
     [

@@ -178,6 +178,10 @@ function isUiChromeLine(line: string): boolean {
     return true;
   }
 
+  if (isLanguageServiceDocumentationLink(withoutCommandLinks)) {
+    return true;
+  }
+
   if (!/\$\([^)]+\)/.test(withoutCommandLinks)) {
     return false;
   }
@@ -198,6 +202,10 @@ function isKnownHoverActionText(value: string): boolean {
 
   return parts.length > 0
     && parts.every((part) => /^(peek|go to|show|open) (definition|declaration|implementation|type definition|references)$/.test(part));
+}
+
+function isLanguageServiceDocumentationLink(value: string): boolean {
+  return /^\[`[^`]+` (?:on [a-z0-9.-]+|in gopls doc viewer)\]\(https?:\/\/[^)]+\)$/i.test(value);
 }
 
 function truncate(value: string, maxLength: number): string {
