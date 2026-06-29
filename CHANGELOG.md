@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.6.0...comment-doc-lens-v0.6.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* **hints:** suppress definition-line self documentation ([7d4909e](https://github.com/tzzs/comment-doc-lens/commit/7d4909ebdfa256634d4620b806c0080ff0308bfc))
+
 ## [0.6.0](https://github.com/tzzs/comment-doc-lens/compare/comment-doc-lens-v0.5.0...comment-doc-lens-v0.6.0) (2026-06-26)
 
 
