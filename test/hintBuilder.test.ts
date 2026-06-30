@@ -43,6 +43,46 @@ test('builds inlay hints from resolved candidate documentation', async () => {
   ]);
 });
 
+test('places hints at absolute line ends for dense visible-range lines', async () => {
+  const line = 'const status = OrderStatusPaid;';
+  const resolver: CommentHintResolver = {
+    resolve: async (candidate) =>
+      candidate.word === 'OrderStatusPaid'
+        ? {
+            summary: '已支付订单',
+            fullText: '已支付订单'
+          }
+        : undefined
+  };
+
+  const hints = await buildCommentHints({
+    lines: [line],
+    range: { startLine: 42, endLineInclusive: 42 },
+    languageId: 'typescript',
+    documentUri: 'file:///order.ts',
+    documentVersion: 1,
+    config: {
+      enabled: true,
+      languages: ['typescript'],
+      maxHintsPerRequest: 20,
+      minIdentifierLength: 2,
+      preferPropertyTail: true,
+      dedupeLineHints: true,
+      resolveTimeoutMs: 750
+    },
+    resolver
+  });
+
+  assert.deepEqual(hints, [
+    {
+      line: 42,
+      character: line.length,
+      label: '// 已支付订单',
+      tooltip: '已支付订单'
+    }
+  ]);
+});
+
 test('filters resolved documentation below the configured word budget', async () => {
   const resolver: CommentHintResolver = {
     resolve: async (candidate) => ({

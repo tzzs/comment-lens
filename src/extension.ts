@@ -253,6 +253,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       return [];
     }
 
+    const documentVersion = document.version;
     const lines = collectLines(document, range);
     const hints = await buildCommentHints({
       lines,
@@ -262,7 +263,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       },
       languageId: document.languageId,
       documentUri: document.uri.toString(),
-      documentVersion: document.version,
+      documentVersion,
       config,
       languageAdapter,
       includeCandidateData: true,
@@ -283,7 +284,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       }
     });
 
-    if (token.isCancellationRequested) {
+    if (token.isCancellationRequested || document.version !== documentVersion) {
       return [];
     }
 
@@ -298,7 +299,7 @@ class CommentDocLensInlayHintProvider implements vscode.InlayHintsProvider {
       this.resolveData.set(inlayHint, {
         candidate: hint.candidate,
         documentUri: document.uri.toString(),
-        documentVersion: document.version,
+        documentVersion,
         languageId: document.languageId
       });
       return inlayHint;

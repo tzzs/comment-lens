@@ -72,6 +72,20 @@ const IDENTIFIER_START = /[$_\p{L}]/u;
 const IDENTIFIER_PART = /[$_\p{L}\p{N}]/u;
 const HASH_LINE_COMMENT_LANGUAGES = new Set(['php', 'python', 'ruby']);
 
+export function getLineText(lines: readonly string[], range: LineRange, lineNumber: number): string {
+  const absoluteLine = lines[lineNumber];
+  if (absoluteLine !== undefined) {
+    return absoluteLine;
+  }
+
+  const relativeLine = lineNumber - range.startLine;
+  if (relativeLine >= 0) {
+    return lines[relativeLine] ?? '';
+  }
+
+  return '';
+}
+
 export function scanCandidateSymbols(
   lines: readonly string[],
   range: LineRange,
@@ -83,7 +97,7 @@ export function scanCandidateSymbols(
   let inBlockComment = false;
 
   for (let lineNumber = range.startLine; lineNumber <= range.endLineInclusive; lineNumber++) {
-    const line = lines[lineNumber] ?? '';
+    const line = getLineText(lines, range, lineNumber);
     if (line.length > maxLineLength) {
       continue;
     }
