@@ -16,6 +16,28 @@ test('scans identifiers in code and skips keywords', () => {
   );
 });
 
+test('scans dense visible-range lines using absolute document line numbers', () => {
+  const candidates = scanCandidateSymbols(
+    ['const status = OrderStatusPaid;'],
+    { startLine: 42, endLineInclusive: 42 },
+    'typescript',
+    20
+  );
+
+  assert.deepEqual(
+    candidates.map((candidate) => ({
+      word: candidate.word,
+      line: candidate.line,
+      startCharacter: candidate.startCharacter,
+      endCharacter: candidate.endCharacter
+    })),
+    [
+      { word: 'status', line: 42, startCharacter: 6, endCharacter: 12 },
+      { word: 'OrderStatusPaid', line: 42, startCharacter: 15, endCharacter: 30 }
+    ]
+  );
+});
+
 test('skips identifiers inside comments and strings', () => {
   const candidates = scanCandidateSymbols(
     [

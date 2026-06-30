@@ -1,4 +1,4 @@
-import { scanCandidateSymbols, type LineRange, type SymbolCandidate } from './candidateScanner';
+import { getLineText, scanCandidateSymbols, type LineRange, type SymbolCandidate } from './candidateScanner';
 import {
   prioritizeCandidates,
   selectHintsForLineBudget,
@@ -63,6 +63,7 @@ export interface BuildCommentHintsInput {
 const MAX_CONCURRENT_RESOLVES = 4;
 const CANDIDATE_SCAN_MULTIPLIER = 3;
 const MIN_EXTRA_SCAN_CANDIDATES = 10;
+const GROUPED_HINT_SEPARATOR = ' | ';
 const DEFAULT_LANGUAGE_REGISTRY = createLanguageRegistry(defaultLanguageAdapters);
 
 export async function buildCommentHints(input: BuildCommentHintsInput): Promise<CommentHint[]> {
@@ -85,7 +86,7 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
   const filteredCandidates = dedupeCandidates(
     candidates.filter((candidate) => shouldResolveCandidate(candidate, input, languageAdapter))
   );
-  const candidatesToResolve = prioritizeCandidates(filteredCandidates, input.lines)
+  const candidatesToResolve = prioritizeCandidates(filteredCandidates, input.lines, input.range)
     .slice(0, input.config.maxHintsPerRequest);
   const resolvedByCandidate = await mapWithConcurrency(
     candidatesToResolve,
@@ -110,7 +111,7 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
 
     const hint: PrioritizedHint = {
       line: candidate.line,
-      character: getLineEndCharacter(input.lines, candidate.line),
+      character: getLineEndCharacter(input.lines, input.range, candidate.line),
       label: `${input.config.hintPrefix ?? '// '}${documentation.summary}`,
       tooltip: documentation.fullText,
       candidate
@@ -122,7 +123,7 @@ export async function buildCommentHints(input: BuildCommentHintsInput): Promise<
     addHint(hints, hint, input.config.dedupeLineHints);
   }
 
-  const selectedHints = selectHintsForLineBudget(hints, input.lines, input.config.maxHintsPerLine);
+  const selectedHints = selectHintsForLineBudget(hints, input.lines, input.config.maxHintsPerLine, input.range);
   const displayHints = groupSameLineHints(selectedHints, input.config.hintPrefix ?? '// ');
   return displayHints.map((hint) => {
     if (input.includeCandidateData) {
@@ -142,8 +143,8 @@ function isLanguageEnabled(config: CommentDocLensConfig, languageId: string): bo
   return config.languageOverrides?.[languageId]?.enabled !== false;
 }
 
-function getLineEndCharacter(lines: readonly string[], lineNumber: number): number {
-  return (lines[lineNumber] ?? '').length;
+function getLineEndCharacter(lines: readonly string[], range: LineRange, lineNumber: number): number {
+  return getLineText(lines, range, lineNumber).length;
 }
 
 function getCandidateScanLimit(maxHintsPerRequest: number): number {
@@ -202,7 +203,7 @@ function shouldResolveCandidate(
     return false;
   }
 
-  const line = input.lines[candidate.line] ?? '';
+  const line = getLineText(input.lines, input.range, candidate.line);
   if (
     languageAdapter.isDeclarationCandidate?.(candidate, line, input.languageId) ||
     languageAdapter.isNoisyCandidate?.(candidate, line, input.languageId)
@@ -274,7 +275,7 @@ function groupSameLineHints(hints: readonly PrioritizedHint[], prefix: string): 
     grouped.push({
       line: hint.line,
       character: hint.character,
-      label: `${prefix}${lineHints.map((lineHint) => formatGroupedLabelPart(lineHint, prefix)).join(' · ')}`,
+      label: `${prefix}${lineHints.map((lineHint) => formatGroupedLabelPart(lineHint, prefix)).join(GROUPED_HINT_SEPARATOR)}`,
       tooltip: lineHints.map(formatGroupedTooltipPart).join('\n\n')
     });
   }

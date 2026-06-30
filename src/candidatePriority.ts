@@ -1,4 +1,4 @@
-import type { SymbolCandidate } from './candidateScanner';
+import { getLineText, type LineRange, type SymbolCandidate } from './candidateScanner';
 import type { CommentHint } from './hintBuilder';
 
 export interface PrioritizedHint extends CommentHint {
@@ -16,13 +16,14 @@ export const CANDIDATE_PRIORITY = {
 
 export function prioritizeCandidates(
   candidates: readonly SymbolCandidate[],
-  lines: readonly string[]
+  lines: readonly string[],
+  range?: LineRange
 ): SymbolCandidate[] {
   return candidates
     .map((candidate, index) => ({
       candidate,
       index,
-      score: getCandidatePriorityScore(candidate, lines[candidate.line] ?? '')
+      score: getCandidatePriorityScore(candidate, getCandidateLine(lines, candidate.line, range))
     }))
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .map((item) => item.candidate);
@@ -31,7 +32,8 @@ export function prioritizeCandidates(
 export function selectHintsForLineBudget(
   hints: readonly PrioritizedHint[],
   lines: readonly string[],
-  maxHintsPerLine?: number
+  maxHintsPerLine?: number,
+  range?: LineRange
 ): PrioritizedHint[] {
   if (!maxHintsPerLine || maxHintsPerLine < 1) {
     return [...hints];
@@ -43,7 +45,7 @@ export function selectHintsForLineBudget(
     lineHints.push({
       hint,
       index,
-      score: getCandidatePriorityScore(hint.candidate, lines[hint.line] ?? '')
+      score: getCandidatePriorityScore(hint.candidate, getCandidateLine(lines, hint.line, range))
     });
     byLine.set(hint.line, lineHints);
   });
@@ -66,14 +68,28 @@ export function selectHintsForLineBudget(
     .map((hint, index) => ({ hint, index }))
     .filter((item) => selected.has(item.index))
     .sort((left, right) => {
-      const leftScore = getCandidatePriorityScore(left.hint.candidate, lines[left.hint.line] ?? '');
-      const rightScore = getCandidatePriorityScore(right.hint.candidate, lines[right.hint.line] ?? '');
+      const leftScore = getCandidatePriorityScore(
+        left.hint.candidate,
+        getCandidateLine(lines, left.hint.line, range)
+      );
+      const rightScore = getCandidatePriorityScore(
+        right.hint.candidate,
+        getCandidateLine(lines, right.hint.line, range)
+      );
       if (left.hint.line !== right.hint.line) {
         return left.hint.line - right.hint.line;
       }
       return rightScore - leftScore || left.index - right.index;
     })
     .map((item) => item.hint);
+}
+
+function getCandidateLine(lines: readonly string[], lineNumber: number, range?: LineRange): string {
+  if (range) {
+    return getLineText(lines, range, lineNumber);
+  }
+
+  return lines[lineNumber] ?? '';
 }
 
 export function getCandidatePriorityScore(candidate: SymbolCandidate, line: string): number {
